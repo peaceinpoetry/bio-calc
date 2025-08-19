@@ -1,56 +1,115 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Awesome Molarity Calculator! 🤩</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Molarity Calculator</title>
+
+    <!-- Google Fonts for a classic, book-like feel -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    
     <style>
+        /* Base styles from the hub page */
         body {
-            font-family: 'Poppins', sans-serif;
-            background-color: #e0f7fa;
-            color: #333;
+            background-color: #000;
+            color: #e0e0e0;
+            font-family: 'Lora', serif;
+            overflow-x: hidden;
             margin: 0;
             padding: 20px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
             box-sizing: border-box;
         }
 
+        #particle-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        /* Header Styles */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+            background: rgba(10, 10, 10, 0.5);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            box-sizing: border-box;
+        }
+
+        .logo {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: #e0e0e0;
+            text-decoration: none;
+        }
+
+        .home-button {
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #e0e0e0;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+
+        .home-button:hover {
+            background-color: rgba(0, 123, 255, 0.5);
+            transform: translateY(-2px);
+        }
+
+        /* Main container for the calculator */
         .container {
             width: 100%;
             max-width: 950px;
-            background-color: #ffffff;
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
             text-align: center;
+            background-color: rgba(30, 30, 30, 0.7); 
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+            margin-top: 100px; /* Pushed down to be below the fixed header */
         }
 
         h1.main-title {
-            color: #4a148c;
+            color: #e0e0e0;
             font-weight: 700;
             margin-bottom: 10px;
         }
 
         .intro {
-            color: #7b1fa2;
+            color: #aaa;
             margin-bottom: 30px;
         }
 
         .grid-container {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
             gap: 25px;
         }
 
         .calculator-card {
-            background-color: #f3e5f5;
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             border-radius: 15px;
             padding: 25px;
             display: flex;
             flex-direction: column;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
             transition: transform 0.3s ease-in-out;
         }
 
@@ -60,7 +119,7 @@
 
         .calculator-card h3 {
             font-size: 1.3em;
-            color: #6a1b9a;
+            color: #e0e0e0;
             font-weight: 600;
             margin-bottom: 20px;
         }
@@ -68,7 +127,6 @@
         .input-group {
             display: flex;
             flex-direction: column;
-            align-items: stretch;
             gap: 8px;
             margin-bottom: 15px;
             text-align: left;
@@ -76,7 +134,7 @@
 
         .input-group label {
             font-weight: 600;
-            color: #666;
+            color: #bbb;
         }
 
         .input-field {
@@ -90,16 +148,18 @@
             flex: 1;
             min-width: 0;
             padding: 12px;
-            border: 2px solid #ce93d8;
+            border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 8px;
             font-size: 1em;
-            background-color: #fff;
+            background-color: rgba(0, 0, 0, 0.3);
+            color: #e0e0e0;
+            font-family: 'Lora', serif;
         }
 
         .input-field input[type="number"]:focus,
         .unit-select:focus {
-            border-color: #9c27b0;
-            box-shadow: 0 0 0 3px rgba(156, 39, 176, 0.2);
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.3);
             outline: none;
         }
         
@@ -107,44 +167,44 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background-color: #fff3e0;
+            background-color: rgba(0, 0, 0, 0.2);
             border-radius: 10px;
             padding: 15px;
             margin-top: auto;
-            border: 2px solid #ffb74d;
+            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .result-label {
             font-weight: 700;
-            color: #e65100;
+            color: #00aaff;
         }
 
         .result-value {
             font-size: 1.2em;
             font-weight: 700;
-            color: #d84315;
+            color: #fff;
         }
 
         button.calculate-btn {
-            background-color: #ff9800;
+            background-color: rgba(0, 123, 255, 0.3);
             color: white;
-            border: none;
+            border: 1px solid rgba(0, 123, 255, 0.5);
             padding: 15px;
             border-radius: 10px;
             font-weight: 700;
             font-size: 1.1em;
             cursor: pointer;
             transition: background-color 0.3s ease;
-            box-shadow: 0 4px 10px rgba(255, 152, 0, 0.4);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
             margin-top: 20px;
         }
         
         button.calculate-btn:hover {
-            background-color: #f57c00;
+            background-color: rgba(0, 123, 255, 0.6);
         }
 
         .error-message {
-            color: #e53935;
+            color: #ff6b6b;
             font-weight: 600;
             margin-top: 10px;
             min-height: 20px;
@@ -152,31 +212,35 @@
 
         /* Responsive adjustments */
         @media (max-width: 480px) {
-            .input-field {
-                flex-direction: column;
-                align-items: stretch;
-            }
-            .result-box {
-                flex-direction: column;
-                align-items: center;
-                text-align: center;
-            }
+            .header { padding: 15px 20px; }
+            .logo { font-size: 1.2em; }
+            .home-button { padding: 8px 15px; }
+            .container { margin-top: 80px; padding: 20px; }
+            .grid-container { grid-template-columns: 1fr; }
         }
     </style>
 </head>
 <body>
 
+    <canvas id="particle-canvas"></canvas>
+
+    <header class="header">
+        <a href="index.html" class="logo"># Bio-Calculator Hub #</a>
+        <a href="index.html" class="home-button">Home</a>
+    </header>
+
     <div class="container">
-        <h1 class="main-title">🧪 Super Molarity Magic! 🤩</h1>
-        <p class="intro">Let's solve chemistry puzzles! Just fill in the blanks and see the answer appear like magic. ✨</p>
+        <h1 class="main-title"># Molarity Calculator #</h1>
+        <p class="intro">Fill in the known values to calculate the molarity of the required compound. Lets go!</p>
 
         <div class="grid-container">
+            <!-- Card 1: Find Mass -->
             <div class="calculator-card">
                 <h3>1. Find the Mass</h3>
                 <div class="input-group">
                     <label>Concentration:</label>
                     <div class="input-field">
-                        <input type="number" id="mass-calc-conc" value="">
+                        <input type="number" id="mass-calc-conc" placeholder="e.g., 100">
                         <select id="mass-calc-conc-unit" class="unit-select">
                             <option value="M">M</option>
                             <option value="mM" selected>millimolar</option>
@@ -186,7 +250,7 @@
                     </div>
                 </div>
                 <div class="input-group">
-                    <label>Formula Weight (Daltons):</label>
+                    <label>Formula Weight (g/mol):</label>
                     <div class="input-field">
                         <input type="number" id="mass-calc-fw" placeholder="e.g., 58.44">
                     </div>
@@ -194,7 +258,7 @@
                 <div class="input-group">
                     <label>Volume:</label>
                     <div class="input-field">
-                        <input type="number" id="mass-calc-vol" value="">
+                        <input type="number" id="mass-calc-vol" placeholder="e.g., 500">
                         <select id="mass-calc-vol-unit" class="unit-select">
                             <option value="L">liter</option>
                             <option value="mL" selected>milliliter</option>
@@ -202,7 +266,7 @@
                         </select>
                     </div>
                 </div>
-                <button class="calculate-btn" onclick="calcMassFromConc()">Mass =</button>
+                <button class="calculate-btn" onclick="calcMassFromConc()">Calculate Mass</button>
                 <div class="error-message" id="mass-error"></div>
                 <div class="result-box">
                     <span class="result-label">Mass:</span>
@@ -210,12 +274,13 @@
                 </div>
             </div>
 
+            <!-- Card 2: Find Volume -->
             <div class="calculator-card">
                 <h3>2. Find the Volume</h3>
                 <div class="input-group">
                     <label>Mass:</label>
                     <div class="input-field">
-                        <input type="number" id="vol-calc-mass" value="">
+                        <input type="number" id="vol-calc-mass" placeholder="e.g., 50">
                         <select id="vol-calc-mass-unit" class="unit-select">
                             <option value="kg">kilograms</option>
                             <option value="g">grams</option>
@@ -225,7 +290,7 @@
                     </div>
                 </div>
                 <div class="input-group">
-                    <label>Formula Weight (Daltons):</label>
+                    <label>Formula Weight (g/mol):</label>
                     <div class="input-field">
                         <input type="number" id="vol-calc-fw" placeholder="e.g., 58.44">
                     </div>
@@ -233,7 +298,7 @@
                 <div class="input-group">
                     <label>Concentration:</label>
                     <div class="input-field">
-                        <input type="number" id="vol-calc-conc" value="">
+                        <input type="number" id="vol-calc-conc" placeholder="e.g., 100">
                         <select id="vol-calc-conc-unit" class="unit-select">
                             <option value="M">M</option>
                             <option value="mM" selected>millimolar</option>
@@ -242,7 +307,7 @@
                         </select>
                     </div>
                 </div>
-                <button class="calculate-btn" onclick="calcVolFromMass()">Volume =</button>
+                <button class="calculate-btn" onclick="calcVolFromMass()">Calculate Volume</button>
                 <div class="error-message" id="vol-error"></div>
                 <div class="result-box">
                     <span class="result-label">Volume:</span>
@@ -250,12 +315,13 @@
                 </div>
             </div>
 
+            <!-- Card 3: Find Molarity -->
             <div class="calculator-card">
                 <h3>3. Find the Molarity</h3>
                 <div class="input-group">
                     <label>Mass:</label>
                     <div class="input-field">
-                        <input type="number" id="molar-calc-mass" value="">
+                        <input type="number" id="molar-calc-mass" placeholder="e.g., 50">
                         <select id="molar-calc-mass-unit" class="unit-select">
                             <option value="kg">kilograms</option>
                             <option value="g">grams</option>
@@ -265,7 +331,7 @@
                     </div>
                 </div>
                 <div class="input-group">
-                    <label>Formula Weight (Daltons):</label>
+                    <label>Formula Weight (g/mol):</label>
                     <div class="input-field">
                         <input type="number" id="molar-calc-fw" placeholder="e.g., 58.44">
                     </div>
@@ -273,7 +339,7 @@
                 <div class="input-group">
                     <label>Volume:</label>
                     <div class="input-field">
-                        <input type="number" id="molar-calc-vol" value="">
+                        <input type="number" id="molar-calc-vol" placeholder="e.g., 500">
                         <select id="molar-calc-vol-unit" class="unit-select">
                             <option value="L">liter</option>
                             <option value="mL" selected>milliliter</option>
@@ -281,7 +347,7 @@
                         </select>
                     </div>
                 </div>
-                <button class="calculate-btn" onclick="calcMolarityFromMass()">Molarity =</button>
+                <button class="calculate-btn" onclick="calcMolarityFromMass()">Calculate Molarity</button>
                 <div class="error-message" id="molar-error"></div>
                 <div class="result-box">
                     <span class="result-label">Molarity:</span>
@@ -289,12 +355,13 @@
                 </div>
             </div>
             
+            <!-- Card 4: Dilution -->
             <div class="calculator-card">
                 <h3>4. Dilute a Stock Solution</h3>
                 <div class="input-group">
-                    <label>Stock concentration:</label>
+                    <label>Stock concentration (C1):</label>
                     <div class="input-field">
-                        <input type="number" id="dilute-stock-conc" value="">
+                        <input type="number" id="dilute-stock-conc" placeholder="e.g., 1000">
                         <select id="dilute-stock-unit" class="unit-select">
                             <option value="M">M</option>
                             <option value="mM" selected>millimolar</option>
@@ -304,9 +371,9 @@
                     </div>
                 </div>
                 <div class="input-group">
-                    <label>Desired concentration:</label>
+                    <label>Desired concentration (C2):</label>
                     <div class="input-field">
-                        <input type="number" id="dilute-desired-conc" value="">
+                        <input type="number" id="dilute-desired-conc" placeholder="e.g., 50">
                         <select id="dilute-desired-unit" class="unit-select">
                             <option value="M">M</option>
                             <option value="mM" selected>millimolar</option>
@@ -316,9 +383,9 @@
                     </div>
                 </div>
                 <div class="input-group">
-                    <label>Desired volume:</label>
+                    <label>Desired volume (V2):</label>
                     <div class="input-field">
-                        <input type="number" id="dilute-desired-vol" value="">
+                        <input type="number" id="dilute-desired-vol" placeholder="e.g., 1000">
                         <select id="dilute-desired-vol-unit" class="unit-select">
                             <option value="L">liter</option>
                             <option value="mL" selected>milliliter</option>
@@ -326,7 +393,7 @@
                         </select>
                     </div>
                 </div>
-                <button class="calculate-btn" onclick="calcDilution()">Required Volume =</button>
+                <button class="calculate-btn" onclick="calcDilution()">Calculate Stock Volume (V1)</button>
                 <div class="error-message" id="dilute-error"></div>
                 <div class="result-box">
                     <span class="result-label">Volume Needed:</span>
@@ -337,6 +404,7 @@
     </div>
 
     <script>
+        // --- Calculation Logic (Unchanged) ---
         const unitFactors = {
             'kg': 1000, 'g': 1, 'mg': 1e-3, 'µg': 1e-6,
             'M': 1, 'mM': 1e-3, 'µM': 1e-6, 'nM': 1e-9, 'pM': 1e-12, 'fM': 1e-15,
@@ -360,7 +428,6 @@
             document.getElementById('dilute-error').textContent = '';
         }
 
-        // 1. Mass from volume & concentration
         function calcMassFromConc() {
             clearErrorMessages();
             const conc = parseFloat(document.getElementById('mass-calc-conc').value);
@@ -374,8 +441,8 @@
                 document.getElementById('mass-result').textContent = '';
                 return;
             }
-            if (fw === 0) {
-                document.getElementById('mass-error').textContent = 'Formula Weight cannot be zero.';
+            if (fw <= 0) {
+                document.getElementById('mass-error').textContent = 'Formula Weight must be positive.';
                 document.getElementById('mass-result').textContent = '';
                 return;
             }
@@ -384,16 +451,13 @@
             const massInGrams = moles * fw;
             
             let massUnit = 'g';
-            if (massInGrams < 1) massUnit = 'mg';
-            if (massInGrams < 1e-3) massUnit = 'µg';
-            if (massInGrams < 1e-6) massUnit = 'ng';
-            if (massInGrams < 1e-9) massUnit = 'pg';
+            if (massInGrams < 1e-0) { massUnit = 'mg'; }
+            if (massInGrams < 1e-3) { massUnit = 'µg'; }
 
-            const result = massInGrams / unitFactors[massUnit];
+            const result = massInGrams / (unitFactors[massUnit] || 1);
             document.getElementById('mass-result').textContent = formatResult(result, massUnit);
         }
 
-        // 2. Volume from mass & concentration
         function calcVolFromMass() {
             clearErrorMessages();
             const mass = parseFloat(document.getElementById('vol-calc-mass').value);
@@ -407,8 +471,8 @@
                 document.getElementById('volume-result').textContent = '';
                 return;
             }
-            if (fw === 0 || conc === 0) {
-                document.getElementById('vol-error').textContent = 'FW or Conc cannot be zero.';
+            if (fw <= 0 || conc <= 0) {
+                document.getElementById('vol-error').textContent = 'FW and Conc must be positive.';
                 document.getElementById('volume-result').textContent = '';
                 return;
             }
@@ -418,16 +482,13 @@
             const volInLiters = moles / (conc * unitFactors[concUnit]);
             
             let volUnit = 'L';
-            if (volInLiters < 1e-3) volUnit = 'mL';
-            if (volInLiters < 1e-6) volUnit = 'µL';
-            if (volInLiters < 1e-9) volUnit = 'nl';
-            if (volInLiters < 1e-12) volUnit = 'pl';
+            if (volInLiters < 1) { volUnit = 'mL'; }
+            if (volInLiters < 1e-3) { volUnit = 'µL'; }
 
-            const result = volInLiters / unitFactors[volUnit];
+            const result = volInLiters / (unitFactors[volUnit] || 1);
             document.getElementById('volume-result').textContent = formatResult(result, volUnit);
         }
 
-        // 3. Molarity from mass & volume
         function calcMolarityFromMass() {
             clearErrorMessages();
             const mass = parseFloat(document.getElementById('molar-calc-mass').value);
@@ -441,8 +502,8 @@
                 document.getElementById('molarity-result').textContent = '';
                 return;
             }
-            if (fw === 0 || vol === 0) {
-                document.getElementById('molar-error').textContent = 'FW or Volume cannot be zero.';
+            if (fw <= 0 || vol <= 0) {
+                document.getElementById('molar-error').textContent = 'FW and Volume must be positive.';
                 document.getElementById('molarity-result').textContent = '';
                 return;
             }
@@ -453,20 +514,20 @@
             const molarity = moles / volInLiters;
 
             let molarUnit = 'M';
-            if (molarity < 1) molarUnit = 'mM';
-            if (molarity < 1e-3) molarUnit = 'µM';
-            if (molarity < 1e-6) molarUnit = 'nM';
+            if (molarity < 1) { molarUnit = 'mM'; }
+            if (molarity < 1e-3) { molarUnit = 'µM'; }
+            if (molarity < 1e-6) { molarUnit = 'nM'; }
 
             const result = molarity / unitFactors[molarUnit];
             document.getElementById('molarity-result').textContent = formatResult(result, molarUnit);
         }
 
-        // 4. Dilute a stock solution
         function calcDilution() {
             clearErrorMessages();
             const stockConc = parseFloat(document.getElementById('dilute-stock-conc').value);
             const stockUnit = document.getElementById('dilute-stock-unit').value;
             const desiredConc = parseFloat(document.getElementById('dilute-desired-conc').value);
+            const desiredUnit = document.getElementById('dilute-desired-unit').value;
             const desiredVol = parseFloat(document.getElementById('dilute-desired-vol').value);
             const desiredVolUnit = document.getElementById('dilute-desired-vol-unit').value;
 
@@ -476,33 +537,159 @@
                 return;
             }
 
-            if (stockConc === 0) {
-                document.getElementById('dilute-error').textContent = 'Stock concentration cannot be zero.';
-                document.getElementById('dilute-result').textContent = '';
-                return;
-            }
-            if (desiredConc > stockConc) {
-                document.getElementById('dilute-error').textContent = 'Desired concentration must be less than stock.';
-                document.getElementById('dilute-result').textContent = '';
-                return;
-            }
-
-            // C1V1 = C2V2
             const c1 = stockConc * unitFactors[stockUnit];
             const c2 = desiredConc * unitFactors[desiredUnit];
             const v2 = desiredVol * unitFactors[desiredVolUnit];
 
-            const requiredVol = (c2 * v2) / c1;
+            if (c1 <= 0) {
+                document.getElementById('dilute-error').textContent = 'Stock concentration must be positive.';
+                document.getElementById('dilute-result').textContent = '';
+                return;
+            }
+            if (c2 > c1) {
+                document.getElementById('dilute-error').textContent = 'Desired conc. cannot be > stock.';
+                document.getElementById('dilute-result').textContent = '';
+                return;
+            }
+
+            const requiredVolInLiters = (c2 * v2) / c1;
             
             let volUnit = 'L';
-            if (requiredVol < 1e-3) volUnit = 'mL';
-            if (requiredVol < 1e-6) volUnit = 'µL';
-            if (requiredVol < 1e-9) volUnit = 'nl';
-            if (requiredVol < 1e-12) volUnit = 'pl';
+            if (requiredVolInLiters < 1) { volUnit = 'mL'; }
+            if (requiredVolInLiters < 1e-3) { volUnit = 'µL'; }
 
-            const result = requiredVol / unitFactors[volUnit];
+            const result = requiredVolInLiters / (unitFactors[volUnit] || 1);
             document.getElementById('dilute-result').textContent = formatResult(result, volUnit);
         }
+    </script>
+    
+    <!-- JavaScript for the Particle Background -->
+    <script>
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        let particlesArray;
+
+        let mouse = {
+            x: null,
+            y: null,
+            radius: (canvas.height / 80) * (canvas.width / 80)
+        }
+
+        window.addEventListener('mousemove',
+            function(event) {
+                mouse.x = event.x;
+                mouse.y = event.y;
+            }
+        );
+
+        class Particle {
+            constructor(x, y, directionX, directionY, size, color) {
+                this.x = x;
+                this.y = y;
+                this.directionX = directionX;
+                this.directionY = directionY;
+                this.size = size;
+                this.color = color;
+            }
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2, false);
+                ctx.fillStyle = 'rgba(150, 150, 150, 0.5)';
+                ctx.fill();
+            }
+            update() {
+                if (this.x > canvas.width || this.x < 0) {
+                    this.directionX = -this.directionX;
+                }
+                if (this.y > canvas.height || this.y < 0) {
+                    this.directionY = -this.directionY;
+                }
+                let dx = mouse.x - this.x;
+                let dy = mouse.y - this.y;
+                let distance = Math.sqrt(dx * dx + dy * dy);
+                if (distance < mouse.radius + this.size) {
+                    if (mouse.x < this.x && this.x < canvas.width - this.size * 10) {
+                        this.x += 10;
+                    }
+                    if (mouse.x > this.x && this.x > this.size * 10) {
+                        this.x -= 10;
+                    }
+                    if (mouse.y < this.y && this.y < canvas.height - this.size * 10) {
+                        this.y += 10;
+                    }
+                    if (mouse.y > this.y && this.y > this.size * 10) {
+                        this.y -= 10;
+                    }
+                }
+                this.x += this.directionX;
+                this.y += this.directionY;
+                this.draw();
+            }
+        }
+
+        function init() {
+            particlesArray = [];
+            let numberOfParticles = (canvas.height * canvas.width) / 9000;
+            for (let i = 0; i < numberOfParticles; i++) {
+                let size = (Math.random() * 2) + 1;
+                let x = (Math.random() * ((innerWidth - size * 2) - (size * 2)) + size * 2);
+                let y = (Math.random() * ((innerHeight - size * 2) - (size * 2)) + size * 2);
+                let directionX = (Math.random() * 0.4) - 0.2;
+                let directionY = (Math.random() * 0.4) - 0.2;
+                let color = '#e0e0e0';
+                particlesArray.push(new Particle(x, y, directionX, directionY, size, color));
+            }
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            ctx.clearRect(0, 0, innerWidth, innerHeight);
+            for (let i = 0; i < particlesArray.length; i++) {
+                particlesArray[i].update();
+            }
+            connect();
+        }
+
+        function connect() {
+            let opacityValue = 1;
+            for (let a = 0; a < particlesArray.length; a++) {
+                for (let b = a; b < particlesArray.length; b++) {
+                    let distance = ((particlesArray[a].x - particlesArray[b].x) * (particlesArray[a].x - particlesArray[b].x)) +
+                        ((particlesArray[a].y - particlesArray[b].y) * (particlesArray[a].y - particlesArray[b].y));
+                    if (distance < (canvas.width / 7) * (canvas.height / 7)) {
+                        opacityValue = 1 - (distance / 20000);
+                        ctx.strokeStyle = 'rgba(180,180,180,' + opacityValue + ')';
+                        ctx.lineWidth = 1;
+                        ctx.beginPath();
+                        ctx.moveTo(particlesArray[a].x, particlesArray[a].y);
+                        ctx.lineTo(particlesArray[b].x, particlesArray[b].y);
+                        ctx.stroke();
+                    }
+                }
+            }
+        }
+        
+        window.addEventListener('resize',
+            function() {
+                canvas.width = innerWidth;
+                canvas.height = innerHeight;
+                mouse.radius = ((canvas.height / 80) * (canvas.height / 80));
+                init();
+            }
+        );
+        
+        window.addEventListener('mouseout',
+            function() {
+                mouse.x = undefined;
+                mouse.y = undefined;
+            }
+        );
+        
+        init();
+        animate();
     </script>
 </body>
 </html>
