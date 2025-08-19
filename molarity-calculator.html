@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Awesome Molarity Calculator! 🤩</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #e0f7fa;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 950px;
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        h1.main-title {
+            color: #4a148c;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .intro {
+            color: #7b1fa2;
+            margin-bottom: 30px;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 25px;
+        }
+
+        .calculator-card {
+            background-color: #f3e5f5;
+            border-radius: 15px;
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .calculator-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .calculator-card h3 {
+            font-size: 1.3em;
+            color: #6a1b9a;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            gap: 8px;
+            margin-bottom: 15px;
+            text-align: left;
+        }
+
+        .input-group label {
+            font-weight: 600;
+            color: #666;
+        }
+
+        .input-field {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .input-field input[type="number"],
+        .unit-select {
+            flex: 1;
+            min-width: 0;
+            padding: 12px;
+            border: 2px solid #ce93d8;
+            border-radius: 8px;
+            font-size: 1em;
+            background-color: #fff;
+        }
+
+        .input-field input[type="number"]:focus,
+        .unit-select:focus {
+            border-color: #9c27b0;
+            box-shadow: 0 0 0 3px rgba(156, 39, 176, 0.2);
+            outline: none;
+        }
+        
+        .result-box {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: #fff3e0;
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: auto;
+            border: 2px solid #ffb74d;
+        }
+
+        .result-label {
+            font-weight: 700;
+            color: #e65100;
+        }
+
+        .result-value {
+            font-size: 1.2em;
+            font-weight: 700;
+            color: #d84315;
+        }
+
+        button.calculate-btn {
+            background-color: #ff9800;
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            box-shadow: 0 4px 10px rgba(255, 152, 0, 0.4);
+            margin-top: 20px;
+        }
+        
+        button.calculate-btn:hover {
+            background-color: #f57c00;
+        }
+
+        .error-message {
+            color: #e53935;
+            font-weight: 600;
+            margin-top: 10px;
+            min-height: 20px;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 480px) {
+            .input-field {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .result-box {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1 class="main-title">🧪 Super Molarity Magic! 🤩</h1>
+        <p class="intro">Let's solve chemistry puzzles! Just fill in the blanks and see the answer appear like magic. ✨</p>
+
+        <div class="grid-container">
+            <div class="calculator-card">
+                <h3>1. Find the Mass</h3>
+                <div class="input-group">
+                    <label>Concentration:</label>
+                    <div class="input-field">
+                        <input type="number" id="mass-calc-conc" value="">
+                        <select id="mass-calc-conc-unit" class="unit-select">
+                            <option value="M">M</option>
+                            <option value="mM" selected>millimolar</option>
+                            <option value="µM">micromolar</option>
+                            <option value="nM">nanomolar</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Formula Weight (Daltons):</label>
+                    <div class="input-field">
+                        <input type="number" id="mass-calc-fw" placeholder="e.g., 58.44">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Volume:</label>
+                    <div class="input-field">
+                        <input type="number" id="mass-calc-vol" value="">
+                        <select id="mass-calc-vol-unit" class="unit-select">
+                            <option value="L">liter</option>
+                            <option value="mL" selected>milliliter</option>
+                            <option value="µL">microliter</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="calculate-btn" onclick="calcMassFromConc()">Mass =</button>
+                <div class="error-message" id="mass-error"></div>
+                <div class="result-box">
+                    <span class="result-label">Mass:</span>
+                    <span class="result-value" id="mass-result"></span>
+                </div>
+            </div>
+
+            <div class="calculator-card">
+                <h3>2. Find the Volume</h3>
+                <div class="input-group">
+                    <label>Mass:</label>
+                    <div class="input-field">
+                        <input type="number" id="vol-calc-mass" value="">
+                        <select id="vol-calc-mass-unit" class="unit-select">
+                            <option value="kg">kilograms</option>
+                            <option value="g">grams</option>
+                            <option value="mg" selected>milligrams</option>
+                            <option value="µg">micrograms</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Formula Weight (Daltons):</label>
+                    <div class="input-field">
+                        <input type="number" id="vol-calc-fw" placeholder="e.g., 58.44">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Concentration:</label>
+                    <div class="input-field">
+                        <input type="number" id="vol-calc-conc" value="">
+                        <select id="vol-calc-conc-unit" class="unit-select">
+                            <option value="M">M</option>
+                            <option value="mM" selected>millimolar</option>
+                            <option value="µM">micromolar</option>
+                            <option value="nM">nanomolar</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="calculate-btn" onclick="calcVolFromMass()">Volume =</button>
+                <div class="error-message" id="vol-error"></div>
+                <div class="result-box">
+                    <span class="result-label">Volume:</span>
+                    <span class="result-value" id="volume-result"></span>
+                </div>
+            </div>
+
+            <div class="calculator-card">
+                <h3>3. Find the Molarity</h3>
+                <div class="input-group">
+                    <label>Mass:</label>
+                    <div class="input-field">
+                        <input type="number" id="molar-calc-mass" value="">
+                        <select id="molar-calc-mass-unit" class="unit-select">
+                            <option value="kg">kilograms</option>
+                            <option value="g">grams</option>
+                            <option value="mg" selected>milligrams</option>
+                            <option value="µg">micrograms</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Formula Weight (Daltons):</label>
+                    <div class="input-field">
+                        <input type="number" id="molar-calc-fw" placeholder="e.g., 58.44">
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Volume:</label>
+                    <div class="input-field">
+                        <input type="number" id="molar-calc-vol" value="">
+                        <select id="molar-calc-vol-unit" class="unit-select">
+                            <option value="L">liter</option>
+                            <option value="mL" selected>milliliter</option>
+                            <option value="µL">microliter</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="calculate-btn" onclick="calcMolarityFromMass()">Molarity =</button>
+                <div class="error-message" id="molar-error"></div>
+                <div class="result-box">
+                    <span class="result-label">Molarity:</span>
+                    <span class="result-value" id="molarity-result"></span>
+                </div>
+            </div>
+            
+            <div class="calculator-card">
+                <h3>4. Dilute a Stock Solution</h3>
+                <div class="input-group">
+                    <label>Stock concentration:</label>
+                    <div class="input-field">
+                        <input type="number" id="dilute-stock-conc" value="">
+                        <select id="dilute-stock-unit" class="unit-select">
+                            <option value="M">M</option>
+                            <option value="mM" selected>millimolar</option>
+                            <option value="µM">micromolar</option>
+                            <option value="nM">nanomolar</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Desired concentration:</label>
+                    <div class="input-field">
+                        <input type="number" id="dilute-desired-conc" value="">
+                        <select id="dilute-desired-unit" class="unit-select">
+                            <option value="M">M</option>
+                            <option value="mM" selected>millimolar</option>
+                            <option value="µM">micromolar</option>
+                            <option value="nM">nanomolar</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <label>Desired volume:</label>
+                    <div class="input-field">
+                        <input type="number" id="dilute-desired-vol" value="">
+                        <select id="dilute-desired-vol-unit" class="unit-select">
+                            <option value="L">liter</option>
+                            <option value="mL" selected>milliliter</option>
+                            <option value="µL">microliter</option>
+                        </select>
+                    </div>
+                </div>
+                <button class="calculate-btn" onclick="calcDilution()">Required Volume =</button>
+                <div class="error-message" id="dilute-error"></div>
+                <div class="result-box">
+                    <span class="result-label">Volume Needed:</span>
+                    <span class="result-value" id="dilute-result"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const unitFactors = {
+            'kg': 1000, 'g': 1, 'mg': 1e-3, 'µg': 1e-6,
+            'M': 1, 'mM': 1e-3, 'µM': 1e-6, 'nM': 1e-9, 'pM': 1e-12, 'fM': 1e-15,
+            'L': 1, 'mL': 1e-3, 'µL': 1e-6, 'nl': 1e-9
+        };
+
+        function formatResult(value, unit) {
+            if (isNaN(value) || !isFinite(value)) {
+                return 'N/A';
+            }
+            if (Math.abs(value) >= 1e4 || (Math.abs(value) > 0 && Math.abs(value) < 1e-4)) {
+                return value.toExponential(4) + ' ' + unit;
+            }
+            return value.toFixed(4) + ' ' + unit;
+        }
+
+        function clearErrorMessages() {
+            document.getElementById('mass-error').textContent = '';
+            document.getElementById('vol-error').textContent = '';
+            document.getElementById('molar-error').textContent = '';
+            document.getElementById('dilute-error').textContent = '';
+        }
+
+        // 1. Mass from volume & concentration
+        function calcMassFromConc() {
+            clearErrorMessages();
+            const conc = parseFloat(document.getElementById('mass-calc-conc').value);
+            const concUnit = document.getElementById('mass-calc-conc-unit').value;
+            const fw = parseFloat(document.getElementById('mass-calc-fw').value);
+            const vol = parseFloat(document.getElementById('mass-calc-vol').value);
+            const volUnit = document.getElementById('mass-calc-vol-unit').value;
+
+            if (isNaN(conc) || isNaN(fw) || isNaN(vol)) {
+                document.getElementById('mass-error').textContent = 'Please fill in all values.';
+                document.getElementById('mass-result').textContent = '';
+                return;
+            }
+            if (fw === 0) {
+                document.getElementById('mass-error').textContent = 'Formula Weight cannot be zero.';
+                document.getElementById('mass-result').textContent = '';
+                return;
+            }
+
+            const moles = (conc * unitFactors[concUnit]) * (vol * unitFactors[volUnit]);
+            const massInGrams = moles * fw;
+            
+            let massUnit = 'g';
+            if (massInGrams < 1) massUnit = 'mg';
+            if (massInGrams < 1e-3) massUnit = 'µg';
+            if (massInGrams < 1e-6) massUnit = 'ng';
+            if (massInGrams < 1e-9) massUnit = 'pg';
+
+            const result = massInGrams / unitFactors[massUnit];
+            document.getElementById('mass-result').textContent = formatResult(result, massUnit);
+        }
+
+        // 2. Volume from mass & concentration
+        function calcVolFromMass() {
+            clearErrorMessages();
+            const mass = parseFloat(document.getElementById('vol-calc-mass').value);
+            const massUnit = document.getElementById('vol-calc-mass-unit').value;
+            const fw = parseFloat(document.getElementById('vol-calc-fw').value);
+            const conc = parseFloat(document.getElementById('vol-calc-conc').value);
+            const concUnit = document.getElementById('vol-calc-conc-unit').value;
+
+            if (isNaN(mass) || isNaN(fw) || isNaN(conc)) {
+                document.getElementById('vol-error').textContent = 'Please fill in all values.';
+                document.getElementById('volume-result').textContent = '';
+                return;
+            }
+            if (fw === 0 || conc === 0) {
+                document.getElementById('vol-error').textContent = 'FW or Conc cannot be zero.';
+                document.getElementById('volume-result').textContent = '';
+                return;
+            }
+
+            const massInGrams = mass * unitFactors[massUnit];
+            const moles = massInGrams / fw;
+            const volInLiters = moles / (conc * unitFactors[concUnit]);
+            
+            let volUnit = 'L';
+            if (volInLiters < 1e-3) volUnit = 'mL';
+            if (volInLiters < 1e-6) volUnit = 'µL';
+            if (volInLiters < 1e-9) volUnit = 'nl';
+            if (volInLiters < 1e-12) volUnit = 'pl';
+
+            const result = volInLiters / unitFactors[volUnit];
+            document.getElementById('volume-result').textContent = formatResult(result, volUnit);
+        }
+
+        // 3. Molarity from mass & volume
+        function calcMolarityFromMass() {
+            clearErrorMessages();
+            const mass = parseFloat(document.getElementById('molar-calc-mass').value);
+            const massUnit = document.getElementById('molar-calc-mass-unit').value;
+            const fw = parseFloat(document.getElementById('molar-calc-fw').value);
+            const vol = parseFloat(document.getElementById('molar-calc-vol').value);
+            const volUnit = document.getElementById('molar-calc-vol-unit').value;
+
+            if (isNaN(mass) || isNaN(fw) || isNaN(vol)) {
+                document.getElementById('molar-error').textContent = 'Please fill in all values.';
+                document.getElementById('molarity-result').textContent = '';
+                return;
+            }
+            if (fw === 0 || vol === 0) {
+                document.getElementById('molar-error').textContent = 'FW or Volume cannot be zero.';
+                document.getElementById('molarity-result').textContent = '';
+                return;
+            }
+
+            const massInGrams = mass * unitFactors[massUnit];
+            const moles = massInGrams / fw;
+            const volInLiters = vol * unitFactors[volUnit];
+            const molarity = moles / volInLiters;
+
+            let molarUnit = 'M';
+            if (molarity < 1) molarUnit = 'mM';
+            if (molarity < 1e-3) molarUnit = 'µM';
+            if (molarity < 1e-6) molarUnit = 'nM';
+
+            const result = molarity / unitFactors[molarUnit];
+            document.getElementById('molarity-result').textContent = formatResult(result, molarUnit);
+        }
+
+        // 4. Dilute a stock solution
+        function calcDilution() {
+            clearErrorMessages();
+            const stockConc = parseFloat(document.getElementById('dilute-stock-conc').value);
+            const stockUnit = document.getElementById('dilute-stock-unit').value;
+            const desiredConc = parseFloat(document.getElementById('dilute-desired-conc').value);
+            const desiredVol = parseFloat(document.getElementById('dilute-desired-vol').value);
+            const desiredVolUnit = document.getElementById('dilute-desired-vol-unit').value;
+
+            if (isNaN(stockConc) || isNaN(desiredConc) || isNaN(desiredVol)) {
+                document.getElementById('dilute-error').textContent = 'Please fill in all values.';
+                document.getElementById('dilute-result').textContent = '';
+                return;
+            }
+
+            if (stockConc === 0) {
+                document.getElementById('dilute-error').textContent = 'Stock concentration cannot be zero.';
+                document.getElementById('dilute-result').textContent = '';
+                return;
+            }
+            if (desiredConc > stockConc) {
+                document.getElementById('dilute-error').textContent = 'Desired concentration must be less than stock.';
+                document.getElementById('dilute-result').textContent = '';
+                return;
+            }
+
+            // C1V1 = C2V2
+            const c1 = stockConc * unitFactors[stockUnit];
+            const c2 = desiredConc * unitFactors[desiredUnit];
+            const v2 = desiredVol * unitFactors[desiredVolUnit];
+
+            const requiredVol = (c2 * v2) / c1;
+            
+            let volUnit = 'L';
+            if (requiredVol < 1e-3) volUnit = 'mL';
+            if (requiredVol < 1e-6) volUnit = 'µL';
+            if (requiredVol < 1e-9) volUnit = 'nl';
+            if (requiredVol < 1e-12) volUnit = 'pl';
+
+            const result = requiredVol / unitFactors[volUnit];
+            document.getElementById('dilute-result').textContent = formatResult(result, volUnit);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Protein Calculator</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f4f8;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 650px;
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            text-align: center;
+            color: #1a237e;
+            font-weight: 600;
+            margin-bottom: 30px;
+        }
+
+        h3 {
+            font-size: 1.1em;
+            color: #4a5568;
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 8px;
+            margin-top: 25px;
+            margin-bottom: 15px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .input-group label {
+            font-weight: 500;
+            min-width: 150px;
+        }
+
+        .input-group input[type="number"] {
+            flex: 1;
+            min-width: 80px;
+            padding: 10px 12px;
+            border: 1px solid #cbd5e0;
+            border-radius: 6px;
+            transition: all 0.3s ease;
+        }
+
+        .input-group input[type="number"]:focus {
+            border-color: #3182ce;
+            box-shadow: 0 0 0 3px rgba(49, 130, 206, 0.2);
+            outline: none;
+        }
+        
+        .unit-select {
+            padding: 10px 12px;
+            border: 1px solid #cbd5e0;
+            border-radius: 6px;
+            background-color: #f7fafc;
+        }
+
+        .result-group {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .result-group input[type="text"] {
+            flex: 1;
+            min-width: 100px;
+            padding: 10px 12px;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+            background-color: #e9ecef;
+            color: #4a5568;
+            font-weight: bold;
+        }
+
+        .result-group label {
+            min-width: 100px;
+            text-align: right;
+            color: #718096;
+        }
+
+        .units {
+            font-size: 0.9em;
+            color: #a0aec0;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Protein Concentration and Mass Calculator</h2>
+
+        <div class="input-group">
+            <label for="mol-weight">Protein Molecular Weight</label>
+            <input type="number" id="mol-weight" min="0" placeholder="e.g., 50.5" value="">
+            <span class="units">kDa</span>
+        </div>
+
+        <hr>
+
+        <h3>Mass to Moles Conversion</h3>
+        <div class="input-group">
+            <input type="number" id="mass-input" value="1">
+            <select id="mass-unit" class="unit-select">
+                <option value="g">grams (g)</option>
+                <option value="mg">milligrams (mg)</option>
+                <option value="µg" selected>micrograms (µg)</option>
+                <option value="ng">nanograms (ng)</option>
+                <option value="pg">picograms (pg)</option>
+                <option value="fg">femtograms (fg)</option>
+            </select>
+        </div>
+        <div class="result-group">
+            <label for="moles-result">Result in Moles</label>
+            <input type="text" id="moles-result" readonly>
+            <select id="moles-unit" class="unit-select">
+                <option value="mol">moles (mol)</option>
+                <option value="mmol">millimoles (mmol)</option>
+                <option value="µmol">micromoles (µmol)</option>
+                <option value="nmol" selected>nanomoles (nmol)</option>
+                <option value="pmol">picomoles (pmol)</option>
+                <option value="fmol">femtomoles (fmol)</option>
+                <option value="amol">attomoles (amol)</option>
+            </select>
+        </div>
+        <div class="result-group">
+            <label for="molecules-result">Or as Molecules</label>
+            <input type="text" id="molecules-result" readonly>
+            <span class="units">molecules</span>
+        </div>
+        
+        <hr>
+
+        <h3>Moles to Mass Conversion</h3>
+        <div class="input-group">
+            <input type="number" id="moles-to-mass-input" value="1">
+            <select id="moles-to-mass-unit" class="unit-select">
+                <option value="mol">moles (mol)</option>
+                <option value="mmol">millimoles (mmol)</option>
+                <option value="µmol">micromoles (µmol)</option>
+                <option value="nmol" selected>nanomoles (nmol)</option>
+                <option value="pmol">picomoles (pmol)</option>
+                <option value="fmol">femtomoles (fmol)</option>
+                <option value="amol">attomoles (amol)</option>
+            </select>
+        </div>
+        <div class="result-group">
+            <label for="mass-result">Result in Mass</label>
+            <input type="text" id="mass-result" readonly>
+            <select id="mass-result-unit" class="unit-select">
+                <option value="g">grams (g)</option>
+                <option value="mg">milligrams (mg)</option>
+                <option value="µg">micrograms (µg)</option>
+                <option value="ng" selected>nanograms (ng)</option>
+                <option value="pg">picograms (pg)</option>
+                <option value="fg">femtograms (fg)</option>
+            </select>
+        </div>
+        
+        <hr>
+
+        <h3>Molar Concentration Calculation</h3>
+        <div class="input-group">
+            <input type="number" id="conc-mass-input" value="1">
+            <select id="conc-mass-unit" class="unit-select">
+                <option value="g">g</option>
+                <option value="mg">mg</option>
+                <option value="µg" selected>µg</option>
+                <option value="ng">ng</option>
+                <option value="pg">pg</option>
+                <option value="fg">fg</option>
+            </select>
+            <span>in</span>
+            <input type="number" id="conc-vol-input" value="1">
+            <select id="conc-vol-unit" class="unit-select">
+                <option value="l">liters (l)</option>
+                <option value="ml">milliliters (ml)</option>
+                <option value="µl" selected>microliters (µl)</option>
+                <option value="nl">nanoliters (nl)</option>
+                <option value="pl">picoliters (pl)</option>
+                <option value="fl">femtoliters (fl)</option>
+            </select>
+        </div>
+        <div class="result-group">
+            <label for="molar-conc-result">Molar Concentration</label>
+            <input type="text" id="molar-conc-result" readonly>
+            <select id="molar-conc-unit" class="unit-select">
+                <option value="M">M</option>
+                <option value="mM">mM</option>
+                <option value="µM">µM</option>
+                <option value="nM">nM</option>
+                <option value="pM">pM</option>
+                <option value="fM">fM</option>
+                <option value="aM">aM</option>
+            </select>
+        </div>
+
+        <hr>
+
+        <h3>Mass from Molar Concentration</h3>
+        <div class="input-group">
+            <input type="number" id="conc-to-mass-molar-input" value="1">
+            <select id="conc-to-mass-molar-unit" class="unit-select">
+                <option value="M">M</option>
+                <option value="mM" selected>mM</option>
+                <option value="µM">µM</option>
+                <option value="nM">nM</option>
+                <option value="pM">pM</option>
+                <option value="fM">fM</option>
+                <option value="aM">aM</option>
+            </select>
+            <span>in</span>
+            <input type="number" id="conc-to-mass-vol-input" value="1">
+            <select id="conc-to-mass-vol-unit" class="unit-select">
+                <option value="l">l</option>
+                <option value="ml">ml</option>
+                <option value="µl" selected>µl</option>
+                <option value="nl">nl</option>
+                <option value="pl">pl</option>
+                <option value="fl">fl</option>
+            </select>
+        </div>
+        <div class="result-group">
+            <label for="mass-from-conc-result">Result in Mass</label>
+            <input type="text" id="mass-from-conc-result" readonly>
+            <select id="mass-from-conc-unit" class="unit-select">
+                <option value="g">grams (g)</option>
+                <option value="mg">milligrams (mg)</option>
+                <option value="µg" selected>micrograms (µg)</option>
+                <option value="ng">nanograms (ng)</option>
+                <option value="pg">picograms (pg)</option>
+                <option value="fg">femtograms (fg)</option>
+            </select>
+        </div>
+    </div>
+
+    <script>
+        const AVOGADRO = 6.02214076e23;
+
+        const unitFactors = {
+            'g': 1, 'mg': 1e-3, 'µg': 1e-6, 'ng': 1e-9, 'pg': 1e-12, 'fg': 1e-15,
+            'mol': 1, 'mmol': 1e-3, 'µmol': 1e-6, 'nmol': 1e-9, 'pmol': 1e-12, 'fmol': 1e-15, 'amol': 1e-18,
+            'l': 1, 'ml': 1e-3, 'µl': 1e-6, 'nl': 1e-9, 'pl': 1e-12, 'fl': 1e-15,
+            'M': 1, 'mM': 1e-3, 'µM': 1e-6, 'nM': 1e-9, 'pM': 1e-12, 'fM': 1e-15, 'aM': 1e-18
+        };
+
+        // All input fields and select boxes that trigger a calculation
+        const inputs = [
+            'mol-weight', 'mass-input', 'mass-unit', 'moles-unit',
+            'moles-to-mass-input', 'moles-to-mass-unit', 'mass-result-unit',
+            'conc-mass-input', 'conc-mass-unit', 'conc-vol-input', 'conc-vol-unit', 'molar-conc-unit',
+            'conc-to-mass-molar-input', 'conc-to-mass-molar-unit', 'conc-to-mass-vol-input', 'conc-to-mass-vol-unit', 'mass-from-conc-unit'
+        ];
+
+        inputs.forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.addEventListener('input', updateAllCalculations);
+                element.addEventListener('change', updateAllCalculations);
+            }
+        });
+
+        function getMolWeight() {
+            const mw = parseFloat(document.getElementById('mol-weight').value);
+            return (isNaN(mw) || mw <= 0) ? null : mw;
+        }
+
+        function formatResult(value) {
+            if (Math.abs(value) >= 1e4 || Math.abs(value) < 1e-4) {
+                return value.toExponential(4);
+            } else {
+                return value.toFixed(4);
+            }
+        }
+
+        // Calculation 1: Mass to Moles
+        function calculateMassToMoles() {
+            const mw = getMolWeight();
+            if (mw === null) {
+                document.getElementById('moles-result').value = '';
+                document.getElementById('molecules-result').value = '';
+                return;
+            }
+
+            const mass = parseFloat(document.getElementById('mass-input').value) || 0;
+            const massUnit = document.getElementById('mass-unit').value;
+            const molesUnit = document.getElementById('moles-unit').value;
+
+            const massInGrams = mass * unitFactors[massUnit];
+            const molesInMol = massInGrams / (mw * 1000); 
+            const resultInSelectedUnit = molesInMol / unitFactors[molesUnit];
+            const molecules = molesInMol * AVOGADRO;
+
+            document.getElementById('moles-result').value = formatResult(resultInSelectedUnit);
+            document.getElementById('molecules-result').value = molecules.toExponential(4);
+        }
+
+        // Calculation 2: Moles to Mass
+        function calculateMolesToMass() {
+            const mw = getMolWeight();
+            if (mw === null) {
+                document.getElementById('mass-result').value = '';
+                return;
+            }
+
+            const moles = parseFloat(document.getElementById('moles-to-mass-input').value) || 0;
+            const molesUnit = document.getElementById('moles-to-mass-unit').value;
+            const massUnit = document.getElementById('mass-result-unit').value;
+
+            const molesInMol = moles * unitFactors[molesUnit];
+            const massInGrams = molesInMol * (mw * 1000);
+            const resultInSelectedUnit = massInGrams / unitFactors[massUnit];
+
+            document.getElementById('mass-result').value = formatResult(resultInSelectedUnit);
+        }
+
+        // Calculation 3: Molar Concentration
+        function calculateMolarConcentration() {
+            const mw = getMolWeight();
+            if (mw === null) {
+                document.getElementById('molar-conc-result').value = '';
+                return;
+            }
+
+            const mass = parseFloat(document.getElementById('conc-mass-input').value) || 0;
+            const massUnit = document.getElementById('conc-mass-unit').value;
+            const volume = parseFloat(document.getElementById('conc-vol-input').value) || 0;
+            const volumeUnit = document.getElementById('conc-vol-unit').value;
+            const molarUnit = document.getElementById('molar-conc-unit').value;
+            
+            if (volume === 0) {
+                 document.getElementById('molar-conc-result').value = 'N/A';
+                 return;
+            }
+
+            const massInGrams = mass * unitFactors[massUnit];
+            const volumeInLiters = volume * unitFactors[volumeUnit];
+            const molesInMol = massInGrams / (mw * 1000);
+            const molarityInM = molesInMol / volumeInLiters;
+            const resultInSelectedUnit = molarityInM / unitFactors[molarUnit];
+
+            document.getElementById('molar-conc-result').value = formatResult(resultInSelectedUnit);
+        }
+
+        // Calculation 4: Weight from Molar Concentration
+        function calculateMassFromMolarConcentration() {
+            const mw = getMolWeight();
+            if (mw === null) {
+                document.getElementById('mass-from-conc-result').value = '';
+                return;
+            }
+
+            const molarity = parseFloat(document.getElementById('conc-to-mass-molar-input').value) || 0;
+            const molarUnit = document.getElementById('conc-to-mass-molar-unit').value;
+            const volume = parseFloat(document.getElementById('conc-to-mass-vol-input').value) || 0;
+            const volumeUnit = document.getElementById('conc-to-mass-vol-unit').value;
+            const massUnit = document.getElementById('mass-from-conc-unit').value;
+
+            const molarityInM = molarity * unitFactors[molarUnit];
+            const volumeInLiters = volume * unitFactors[volumeUnit];
+            const molesInMol = molarityInM * volumeInLiters;
+            const massInGrams = molesInMol * (mw * 1000);
+            const resultInSelectedUnit = massInGrams / unitFactors[massUnit];
+
+            document.getElementById('mass-from-conc-result').value = formatResult(resultInSelectedUnit);
+        }
+        
+        // This function calls all four calculation functions to keep the page updated
+        function updateAllCalculations() {
+            calculateMassToMoles();
+            calculateMolesToMass();
+            calculateMolarConcentration();
+            calculateMassFromMolarConcentration();
+        }
+
+        // Initial calculation on page load
+        updateAllCalculations();
+    </script>
+</body>
+</html>
