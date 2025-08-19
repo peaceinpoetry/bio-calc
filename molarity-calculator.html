@@ -20,6 +20,9 @@
             margin: 0;
             padding: 20px;
             box-sizing: border-box;
+            /* MODIFIED: Added flex properties to center the container */
+            display: flex;
+            justify-content: center;
         }
 
         #particle-canvas {
@@ -83,6 +86,7 @@
             border-radius: 12px;
             box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
             margin-top: 100px; /* Pushed down to be below the fixed header */
+            margin-bottom: 20px; /* Added margin to the bottom */
         }
 
         h1.main-title {
@@ -231,7 +235,7 @@
 
     <div class="container">
         <h1 class="main-title"># Molarity Calculator #</h1>
-        <p class="intro">Fill in the known values to calculate the molarity of the required compound. Lets go!</p>
+        <p class="intro">Fill in the known values to calculate the molarity of the required protein. Lets go!</p>
 
         <div class="grid-container">
             <!-- Card 1: Find Mass -->
