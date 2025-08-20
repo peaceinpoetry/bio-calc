@@ -245,6 +245,7 @@
         <div class="tab-nav">
             <button data-tab="ligation" class="tab-button active">Ligation</button>
             <button data-tab="dsdna" class="tab-button">dsDNA</button>
+            <button data-tab="ssdna" class="tab-button">ssDNA</button>
             <button data-tab="ssrna" class="tab-button">ssRNA</button>
         </div>
 
@@ -292,6 +293,37 @@
                 <h3>dsDNA: Moles to Mass Conversion</h3>
                 <div class="input-group"><label for="dsdna-moles-input">Moles</label><input type="number" id="dsdna-moles-input" value="1"><select id="dsdna-moles-to-mass-unit" class="unit-select"><option value="µmol">µmol</option><option value="nmol">nmol</option><option value="pmol" selected>pmol</option><option value="fmol">fmol</option></select></div>
                 <div class="result-group"><label for="dsdna-mass-result">Result in Mass</label><input type="text" id="dsdna-mass-result" readonly><select id="dsdna-mass-result-unit" class="unit-select"><option value="µg">µg</option><option value="ng" selected>ng</option><option value="pg">pg</option></select></div>
+            </div>
+        </div>
+
+        <!-- ssDNA Calculator Tab -->
+        <div id="ssdna" class="tab-content">
+            <div class="input-group">
+                <label for="ssdna-sequence">Sequence (Optional)</label>
+                <textarea id="ssdna-sequence" placeholder="Paste sequence to auto-fill length..."></textarea>
+            </div>
+            <div class="input-group">
+                <label for="ssdna-len">Length</label>
+                <input type="number" id="ssdna-len" value="1000">
+                <span class="units">nt</span>
+            </div>
+            <hr>
+            <div class="sub-nav">
+                <button data-subtab="ssdna-mass-to-moles" class="sub-nav-button active">Mass → Moles</button>
+                <button data-subtab="ssdna-moles-to-mass" class="sub-nav-button">Moles → Mass</button>
+            </div>
+            <div id="ssdna-mass-to-moles" class="calculator-section active">
+                <h3>ssDNA: Mass to Moles Conversion</h3>
+                <div class="input-group"><label for="ssdna-mass-input">Mass</label><input type="number" id="ssdna-mass-input" value="1"><select id="ssdna-mass-unit" class="unit-select"><option value="µg">µg</option><option value="ng" selected>ng</option><option value="pg">pg</option></select></div>
+                <div class="result-group"><label for="ssdna-moles-result">Result in Moles</label><input type="text" id="ssdna-moles-result" readonly><select id="ssdna-moles-unit" class="unit-select"><option value="µmol">µmol</option><option value="nmol">nmol</option><option value="pmol" selected>pmol</option><option value="fmol">fmol</option></select></div>
+                <div class="result-group"><label for="ssdna-ends-result">Moles of 3'/5' Ends</label><input type="text" id="ssdna-ends-result" readonly></div>
+                <div class="result-group"><label for="ssdna-copy-number-result">Copy Number</label><input type="text" id="ssdna-copy-number-result" readonly></div>
+                <div class="result-group"><label for="ssdna-mw-result">Molecular Weight</label><input type="text" id="ssdna-mw-result" readonly><span class="units">g/mol</span></div>
+            </div>
+            <div id="ssdna-moles-to-mass" class="calculator-section">
+                <h3>ssDNA: Moles to Mass Conversion</h3>
+                <div class="input-group"><label for="ssdna-moles-input">Moles</label><input type="number" id="ssdna-moles-input" value="1"><select id="ssdna-moles-to-mass-unit" class="unit-select"><option value="µmol">µmol</option><option value="nmol">nmol</option><option value="pmol" selected>pmol</option><option value="fmol">fmol</option></select></div>
+                <div class="result-group"><label for="ssdna-mass-result">Result in Mass</label><input type="text" id="ssdna-mass-result" readonly><select id="ssdna-mass-result-unit" class="unit-select"><option value="µg">µg</option><option value="ng" selected>ng</option><option value="pg">pg</option></select></div>
             </div>
         </div>
 
@@ -377,8 +409,14 @@
                 const massUnit = document.getElementById(`${type}-mass-unit`).value;
                 const molesUnit = document.getElementById(`${type}-moles-unit`).value;
 
-                // UPDATED: Using specific formula for ssRNA
-                const totalMW = (type === 'dsdna') ? (len * 615.96) + 36.04 : (len * 320.47) + 18.02;
+                let totalMW;
+                if (type === 'dsdna') {
+                    totalMW = (len * 615.96) + 36.04;
+                } else if (type === 'ssdna') {
+                    totalMW = (len * 307.97) + 18.02;
+                } else { // ssRNA
+                    totalMW = (len * 320.47) + 18.02;
+                }
                 
                 if (len <= 0) {
                     document.getElementById(`${type}-moles-result`).value = 'N/A';
@@ -410,8 +448,15 @@
                 const molesToMassUnit = document.getElementById(`${type}-moles-to-mass-unit`).value;
                 const massResultUnit = document.getElementById(`${type}-mass-result-unit`).value;
                 
-                // UPDATED: Using specific formula for ssRNA
-                const totalMW = (type === 'dsdna') ? (len * 615.96) + 36.04 : (len * 320.47) + 18.02;
+                let totalMW;
+                if (type === 'dsdna') {
+                    totalMW = (len * 615.96) + 36.04;
+                } else if (type === 'ssdna') {
+                    totalMW = (len * 307.97) + 18.02;
+                } else { // ssRNA
+                    totalMW = (len * 320.47) + 18.02;
+                }
+
                 const molesInMolForMass = moles * unitFactors[molesToMassUnit];
                 const massInGramsFromResult = molesInMolForMass * totalMW;
                 const massResult = massInGramsFromResult / unitFactors[massResultUnit];
@@ -437,7 +482,7 @@
                     handleSequenceInput(activeTab);
                 } else if (activeTab === 'ligation') {
                     calculateLigation();
-                } else if (activeTab === 'dsdna' || activeTab === 'ssrna') {
+                } else if (activeTab === 'dsdna' || activeTab === 'ssdna' || activeTab === 'ssrna') {
                     calculateMassToMoles(activeTab);
                     calculateMolesToMass(activeTab);
                 }
@@ -471,6 +516,8 @@
             calculateLigation();
             calculateMassToMoles('dsdna');
             calculateMolesToMass('dsdna');
+            calculateMassToMoles('ssdna');
+            calculateMolesToMass('ssdna');
             calculateMassToMoles('ssrna');
             calculateMolesToMass('ssrna');
         });
