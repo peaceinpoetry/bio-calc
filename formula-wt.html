@@ -191,7 +191,7 @@
         <h1 class="main-title">Formula Weight Calculator</h1>
 
         <div class="input-group">
-            <label for="compound-name">Search by Compound Name (Live Search)</label>
+            <label for="compound-name">Search by Compound Name (Live Search via ChEMBL)</label>
             <input type="text" id="compound-name" placeholder="e.g., Sodium Chloride">
             <div id="suggestions"></div>
         </div>
@@ -233,7 +233,7 @@
             const errorEl = document.getElementById('error');
             let debounceTimer;
 
-            // --- Formula Parsing and Calculation (Local) ---
+            // --- Formula Parsing and Calculation (Local Fallback) ---
             function calculateFormulaWeight(formula) {
                 errorEl.textContent = '';
                 if (!formula) {
@@ -288,57 +288,44 @@
                 resultEl.textContent = totalWeight.toLocaleString('en-US', { maximumFractionDigits: 4, useGrouping: false });
             }
 
-            // --- PubChem API Functions ---
+            // --- ChEMBL API Functions ---
             async function getSuggestions(query) {
                 if (query.length < 3) {
                     suggestionsEl.innerHTML = '';
                     return;
                 }
-                const url = `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/${encodeURIComponent(query)}/synonyms/JSON?list_return=auto`;
+                // ChEMBL API returns molecule properties directly in the search result
+                const url = `https://www.ebi.ac.uk/chembl/api/data/molecule.json?molecule_synonyms__icontains=${encodeURIComponent(query)}&limit=10`;
+                
                 try {
                     const response = await fetch(url);
                     if (!response.ok) return;
                     const data = await response.json();
-                    const synonyms = data.InformationList.Information[0].Synonym || [];
-                    displaySuggestions(synonyms.slice(0, 10)); // Show top 10
+                    if (data.molecules) {
+                        displaySuggestions(data.molecules);
+                    }
                 } catch (error) {
-                    console.error("Error fetching suggestions:", error);
+                    console.error("Error fetching suggestions from ChEMBL:", error);
                 }
             }
 
-            function displaySuggestions(synonyms) {
+            function displaySuggestions(molecules) {
                 suggestionsEl.innerHTML = '';
-                synonyms.forEach(name => {
+                molecules.forEach(mol => {
                     const div = document.createElement('div');
-                    div.textContent = name;
+                    // Use preferred name if available, otherwise the first synonym
+                    const displayName = mol.pref_name || (mol.molecule_synonyms[0] ? mol.molecule_synonyms[0].molecule_synonym : 'Unknown');
+                    div.textContent = displayName;
+                    
                     div.addEventListener('click', () => {
-                        nameInput.value = name;
+                        nameInput.value = displayName;
+                        formulaInput.value = mol.molecule_properties.full_molformula;
+                        resultEl.textContent = parseFloat(mol.molecule_properties.full_mwt).toLocaleString('en-US', { maximumFractionDigits: 4, useGrouping: false });
                         suggestionsEl.innerHTML = '';
-                        getCompoundData(name);
+                        errorEl.textContent = '';
                     });
                     suggestionsEl.appendChild(div);
                 });
-            }
-
-            async function getCompoundData(name) {
-                const url = `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/${encodeURIComponent(name)}/property/MolecularFormula,MolecularWeight/JSON`;
-                try {
-                    const response = await fetch(url);
-                    if (!response.ok) {
-                        errorEl.textContent = 'Compound not found.';
-                        return;
-                    }
-                    const data = await response.json();
-                    const props = data.PropertyTable.Properties[0];
-                    if (props) {
-                        formulaInput.value = props.MolecularFormula;
-                        resultEl.textContent = parseFloat(props.MolecularWeight).toLocaleString('en-US', { maximumFractionDigits: 4, useGrouping: false });
-                        errorEl.textContent = '';
-                    }
-                } catch (error) {
-                    errorEl.textContent = 'Failed to fetch data.';
-                    console.error("Error fetching compound data:", error);
-                }
             }
 
             // --- Event Listeners ---
