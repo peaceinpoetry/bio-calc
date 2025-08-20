@@ -1,7 +1,7 @@
 #BIO-CALCULATOR
-It is a open-source and open to all calculator for use and free. This is a all-in-one bio-calculator.
+It is a open-source and open to all calculator and free to use. This is a all-in-one bio-calculator.
 
-Just login to https://www.peaceinpoetry.com/bio-calc/index.html
+Just logon to https://www.peaceinpoetry.com/bio-calc/index.html
 
 There are three use for this website currently:
 1. Calculating the milecular weight of proteins and molar calculations related to proteins.
