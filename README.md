@@ -9,3 +9,6 @@ There are three use for this website currently:
 3. Calculation related to DNA such as ligation ration, dsDNA, ssDNA and ssRNA molecular weight and etc. Just visit the site and use as per your need.
 
 THANK YOU AND ENJOY
+
+#If you want me to add any type of calculator to the website please feel free to write to peaceinpoetry@yahoo.com
+#I will try to add them to the website!
