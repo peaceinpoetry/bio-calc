@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DNA Calculators</title>
+
+    <!-- Google Fonts for a classic, book-like feel -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+    
+    <style>
+        /* Base styles from the hub page */
+        body {
+            background-color: #000;
+            color: #e0e0e0;
+            font-family: 'Lora', serif;
+            overflow-x: hidden;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+            display: flex;
+            justify-content: center;
+        }
+
+        #particle-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+
+        /* Header Styles */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+            background: rgba(10, 10, 10, 0.5);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            box-sizing: border-box;
+        }
+
+        .logo {
+            font-size: 1.5em;
+            font-weight: 700;
+            color: #e0e0e0;
+            text-decoration: none;
+        }
+
+        .home-button {
+            background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #e0e0e0;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: background-color 0.3s, transform 0.3s;
+        }
+
+        .home-button:hover {
+            background-color: rgba(0, 123, 255, 0.5);
+            transform: translateY(-2px);
+        }
+
+        /* Main container for the calculator */
+        .container {
+            width: 100%;
+            max-width: 850px;
+            background-color: rgba(30, 30, 30, 0.7); 
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 30px 40px;
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+            margin-top: 100px;
+            margin-bottom: 20px;
+        }
+
+        h1.main-title {
+            text-align: center;
+            color: #e0e0e0;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+        
+        /* Tab Navigation */
+        .tab-nav {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .tab-button {
+            padding: 10px 20px;
+            cursor: pointer;
+            background: none;
+            border: none;
+            color: #aaa;
+            font-family: 'Lora', serif;
+            font-size: 1.1em;
+            font-weight: 600;
+            transition: color 0.3s, border-bottom 0.3s;
+            border-bottom: 3px solid transparent;
+        }
+        .tab-button.active {
+            color: #4dabf7;
+            border-bottom: 3px solid #4dabf7;
+        }
+
+        /* Tab Content */
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Sub-navigation for dsDNA/ssRNA */
+        .sub-nav {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        .sub-nav-button {
+             background-color: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #e0e0e0;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .sub-nav-button.active {
+            background-color: rgba(0, 123, 255, 0.5);
+        }
+        .calculator-section {
+            display: none;
+             animation: fadeIn 0.5s ease-in-out;
+        }
+        .calculator-section.active {
+            display: block;
+        }
+
+
+        /* General Calculator Styles */
+        h3 {
+            font-size: 1.2em;
+            color: #e0e0e0;
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+        .input-group, .result-group {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .input-group label, .result-group label {
+            font-weight: 600;
+            color: #bbb;
+            flex-basis: 150px;
+        }
+        input[type="number"], input[type="text"], .unit-select, textarea {
+            flex: 1;
+            min-width: 120px;
+            padding: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            font-size: 1em;
+            background-color: rgba(0, 0, 0, 0.3);
+            color: #e0e0e0;
+            font-family: 'Lora', serif;
+        }
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        input[type="number"]:focus, input[type="text"]:focus, .unit-select:focus, textarea:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.3);
+            outline: none;
+        }
+        input[type="text"][readonly] {
+            background-color: rgba(0, 0, 0, 0.4);
+            color: #fff;
+            font-weight: bold;
+        }
+        .units { font-size: 1em; color: #aaa; }
+        hr { border: none; height: 1px; background-color: rgba(255, 255, 255, 0.1); margin: 30px 0; }
+
+        /* Ligation Specific Styles */
+        .ligation-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+        .ligation-result-section { display: flex; flex-direction: column; justify-content: center; align-items: center; background-color: rgba(0, 0, 0, 0.2); border-radius: 15px; padding: 20px; border: 1px solid rgba(255, 255, 255, 0.1); }
+        .ligation-result-section h3 { margin-top: 0; color: #aaa; font-weight: normal; }
+        .ligation-result-value { font-size: 2.5em; font-weight: bold; color: #4dabf7; word-break: break-all; text-align: center; }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .ligation-grid { grid-template-columns: 1fr; }
+        }
+        @media (max-width: 600px) {
+            .header { padding: 15px 20px; }
+            .logo { font-size: 1.2em; }
+            .home-button { padding: 8px 15px; }
+            .container { margin-top: 80px; padding: 20px; }
+            .input-group label, .result-group label { flex-basis: 100%; }
+            .tab-button { font-size: 1em; padding: 10px 15px; }
+        }
+
+    </style>
+</head>
+<body>
+
+    <canvas id="particle-canvas"></canvas>
+
+    <header class="header">
+        <a href="index.html" class="logo"># Bio-Calculator Hub #</a>
+        <a href="index.html" class="home-button">Home</a>
+    </header>
+
+    <div class="container">
+        <h1 class="main-title"># DNA Calculator #</h1>
+
+        <div class="tab-nav">
+            <button data-tab="ligation" class="tab-button active">Ligation</button>
+            <button data-tab="dsdna" class="tab-button">dsDNA</button>
+            <button data-tab="ssrna" class="tab-button">ssRNA</button>
+        </div>
+
+        <!-- Ligation Calculator Tab -->
+        <div id="ligation" class="tab-content active">
+            <div class="ligation-grid">
+                <div class="ligation-input-section">
+                    <div class="input-group"><label for="vector-len">Vector Length</label><div class="input-field"><input type="number" id="vector-len" value="3.0"><select id="vector-len-unit" class="unit-select"><option value="kb" selected>kb</option><option value="bp">bp</option></select></div></div>
+                    <div class="input-group"><label for="vector-mass">Vector Mass</label><div class="input-field"><input type="number" id="vector-mass" value="50"><select id="vector-mass-unit" class="unit-select"><option value="µg">µg</option><option value="ng" selected>ng</option></select></div></div>
+                    <div class="input-group"><label for="insert-len">Insert Length</label><div class="input-field"><input type="number" id="insert-len" value="0.5"><select id="insert-len-unit" class="unit-select"><option value="kb" selected>kb</option><option value="bp">bp</option></select></div></div>
+                    <div class="input-group"><label for="ratio">Insert:Vector Molar Ratio</label><div class="ratio-field"><input type="number" id="ratio" value="3" style="max-width: 100px;"><span>: 1</span></div></div>
+                </div>
+                <div class="ligation-result-section">
+                    <h3>Required Mass of Insert</h3>
+                    <div id="ligation-result" class="ligation-result-value"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- dsDNA Calculator Tab -->
+        <div id="dsdna" class="tab-content">
+            <div class="input-group">
+                <label for="dsdna-sequence">Sequence (Optional)</label>
+                <textarea id="dsdna-sequence" placeholder="Paste sequence to auto-fill length..."></textarea>
+            </div>
+            <div class="input-group">
+                <label for="dsdna-len">Length</label>
+                <input type="number" id="dsdna-len" value="3000">
+                <span class="units">bp</span>
+            </div>
+            <hr>
+            <div class="sub-nav">
+                <button data-subtab="dsdna-mass-to-moles" class="sub-nav-button active">Mass → Moles</button>
+                <button data-subtab="dsdna-moles-to-mass" class="sub-nav-button">Moles → Mass</button>
+            </div>
+            <div id="dsdna-mass-to-moles" class="calculator-section active">
+                <h3>dsDNA: Mass to Moles Conversion</h3>
+                <div class="input-group"><label for="dsdna-mass-input">Mass</label><input type="number" id="dsdna-mass-input" value="1"><select id="dsdna-mass-unit" class="unit-select"><option value="µg">µg</option><option value="ng" selected>ng</option><option value="pg">pg</option></select></div>
+                <div class="result-group"><label for="dsdna-moles-result">Result in Moles</label><input type="text" id="dsdna-moles-result" readonly><select id="dsdna-moles-unit" class="unit-select"><option value="µmol">µmol</option><option value="nmol">nmol</option><option value="pmol" selected>pmol</option><option value="fmol">fmol</option></select></div>
+                <div class="result-group"><label for="dsdna-ends-result">Moles of 3'/5' Ends</label><input type="text" id="dsdna-ends-result" readonly></div>
+                <div class="result-group"><label for="dsdna-copy-number-result">Copy Number</label><input type="text" id="dsdna-copy-number-result" readonly></div>
+                <div class="result-group"><label for="dsdna-mw-result">Molecular Weight</label><input type="text" id="dsdna-mw-result" readonly><span class="units">g/mol</span></div>
+            </div>
+            <div id="dsdna-moles-to-mass" class="calculator-section">
+                <h3>dsDNA: Moles to Mass Conversion</h3>
+                <div class="input-group"><label for="dsdna-moles-input">Moles</label><input type="number" id="dsdna-moles-input" value="1"><select id="dsdna-moles-to-mass-unit" class="unit-select"><option value="µmol">µmol</option><option value="nmol">nmol</option><option value="pmol" selected>pmol</option><option value="fmol">fmol</option></select></div>
+                <div class="result-group"><label for="dsdna-mass-result">Result in Mass</label><input type="text" id="dsdna-mass-result" readonly><select id="dsdna-mass-result-unit" class="unit-select"><option value="µg">µg</option><option value="ng" selected>ng</option><option value="pg">pg</option></select></div>
+            </div>
+        </div>
+
+        <!-- ssRNA Calculator Tab -->
+        <div id="ssrna" class="tab-content">
+            <div class="input-group">
+                <label for="ssrna-sequence">Sequence (Optional)</label>
+                <textarea id="ssrna-sequence" placeholder="Paste sequence to auto-fill length..."></textarea>
+            </div>
+            <div class="input-group">
+                <label for="ssrna-len">Length</label>
+                <input type="number" id="ssrna-len" value="1000">
+                <span class="units">nt</span>
+            </div>
+            <hr>
+            <div class="sub-nav">
+                <button data-subtab="ssrna-mass-to-moles" class="sub-nav-button active">Mass → Moles</button>
+                <button data-subtab="ssrna-moles-to-mass" class="sub-nav-button">Moles → Mass</button>
+            </div>
+            <div id="ssrna-mass-to-moles" class="calculator-section active">
+                <h3>ssRNA: Mass to Moles Conversion</h3>
+                <div class="input-group"><label for="ssrna-mass-input">Mass</label><input type="number" id="ssrna-mass-input" value="1"><select id="ssrna-mass-unit" class="unit-select"><option value="µg">µg</option><option value="ng" selected>ng</option><option value="pg">pg</option></select></div>
+                <div class="result-group"><label for="ssrna-moles-result">Result in Moles</label><input type="text" id="ssrna-moles-result" readonly><select id="ssrna-moles-unit" class="unit-select"><option value="µmol">µmol</option><option value="nmol">nmol</option><option value="pmol" selected>pmol</option><option value="fmol">fmol</option></select></div>
+                <div class="result-group"><label for="ssrna-ends-result">Moles of 3'/5' Ends</label><input type="text" id="ssrna-ends-result" readonly></div>
+                <div class="result-group"><label for="ssrna-copy-number-result">Copy Number</label><input type="text" id="ssrna-copy-number-result" readonly></div>
+                <div class="result-group"><label for="ssrna-mw-result">Molecular Weight</label><input type="text" id="ssrna-mw-result" readonly><span class="units">g/mol</span></div>
+            </div>
+            <div id="ssrna-moles-to-mass" class="calculator-section">
+                <h3>ssRNA: Moles to Mass Conversion</h3>
+                <div class="input-group"><label for="ssrna-moles-input">Moles</label><input type="number" id="ssrna-moles-input" value="1"><select id="ssrna-moles-to-mass-unit" class="unit-select"><option value="µmol">µmol</option><option value="nmol">nmol</option><option value="pmol" selected>pmol</option><option value="fmol">fmol</option></select></div>
+                <div class="result-group"><label for="ssrna-mass-result">Result in Mass</label><input type="text" id="ssrna-mass-result" readonly><select id="ssrna-mass-result-unit" class="unit-select"><option value="µg">µg</option><option value="ng" selected>ng</option><option value="pg">pg</option></select></div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- Constants ---
+            const AVOGADRO = 6.022e23;
+            const unitFactors = {
+                'g': 1, 'mg': 1e-3, 'µg': 1e-6, 'ng': 1e-9, 'pg': 1e-12, 'fg': 1e-15,
+                'mol': 1, 'mmol': 1e-3, 'µmol': 1e-6, 'nmol': 1e-9, 'pmol': 1e-12, 'fmol': 1e-15
+            };
+
+            // --- General Calculation Logic ---
+            function formatNumber(value) {
+                if (isNaN(value) || !isFinite(value)) return 'N/A';
+                if (value === 0) return '0';
+                if (Math.abs(value) >= 1_000_000 || (Math.abs(value) > 0 && Math.abs(value) < 0.001)) {
+                    return value.toExponential(3);
+                }
+                return value.toLocaleString('en-US', { maximumFractionDigits: 4, useGrouping: false });
+            }
+
+            function formatResultWithUnit(value, unit) {
+                const formattedNumber = formatNumber(value);
+                return `${formattedNumber} ${unit}`;
+            }
+
+            // --- Ligation Calculator ---
+            function calculateLigation() {
+                const vectorLen = parseFloat(document.getElementById('vector-len').value) || 0;
+                const vectorMass = parseFloat(document.getElementById('vector-mass').value) || 0;
+                const insertLen = parseFloat(document.getElementById('insert-len').value) || 0;
+                const ratio = parseFloat(document.getElementById('ratio').value) || 0;
+                const vectorLenInBp = document.getElementById('vector-len-unit').value === 'kb' ? vectorLen * 1000 : vectorLen;
+                const insertLenInBp = document.getElementById('insert-len-unit').value === 'kb' ? insertLen * 1000 : insertLen;
+                const vectorMassInNg = document.getElementById('vector-mass-unit').value === 'µg' ? vectorMass * 1000 : vectorMass;
+
+                if (vectorLenInBp === 0) {
+                    document.getElementById('ligation-result').textContent = 'N/A';
+                    return;
+                }
+                const insertMassInNg = vectorMassInNg * (insertLenInBp / vectorLenInBp) * ratio;
+                document.getElementById('ligation-result').textContent = formatResultWithUnit(insertMassInNg, 'ng');
+            }
+            
+            // --- Nucleic Acid Converters ---
+            function calculateMassToMoles(type) {
+                const len = parseFloat(document.getElementById(`${type}-len`).value) || 0;
+                const mass = parseFloat(document.getElementById(`${type}-mass-input`).value) || 0;
+                const massUnit = document.getElementById(`${type}-mass-unit`).value;
+                const molesUnit = document.getElementById(`${type}-moles-unit`).value;
+
+                // UPDATED: Using specific formula for ssRNA
+                const totalMW = (type === 'dsdna') ? (len * 615.96) + 36.04 : (len * 320.47) + 18.02;
+                
+                if (len <= 0) {
+                    document.getElementById(`${type}-moles-result`).value = 'N/A';
+                    document.getElementById(`${type}-ends-result`).value = 'N/A';
+                    document.getElementById(`${type}-copy-number-result`).value = 'N/A';
+                    document.getElementById(`${type}-mw-result`).value = 'N/A';
+                    return;
+                }
+
+                const massInGrams = mass * unitFactors[massUnit];
+                const molesInMol = massInGrams / totalMW;
+                const molesResult = molesInMol / unitFactors[molesUnit];
+                const molesOfEnds = (type === 'dsdna') ? molesResult * 2 : molesResult;
+                const copyNumber = molesInMol * AVOGADRO;
+                
+                document.getElementById(`${type}-moles-result`).value = formatNumber(molesResult);
+                document.getElementById(`${type}-ends-result`).value = formatNumber(molesOfEnds);
+                document.getElementById(`${type}-copy-number-result`).value = formatNumber(copyNumber);
+                document.getElementById(`${type}-mw-result`).value = formatNumber(totalMW);
+            }
+
+            function calculateMolesToMass(type) {
+                const len = parseFloat(document.getElementById(`${type}-len`).value) || 0;
+                if (len <= 0) {
+                    document.getElementById(`${type}-mass-result`).value = 'N/A';
+                    return;
+                }
+                const moles = parseFloat(document.getElementById(`${type}-moles-input`).value) || 0;
+                const molesToMassUnit = document.getElementById(`${type}-moles-to-mass-unit`).value;
+                const massResultUnit = document.getElementById(`${type}-mass-result-unit`).value;
+                
+                // UPDATED: Using specific formula for ssRNA
+                const totalMW = (type === 'dsdna') ? (len * 615.96) + 36.04 : (len * 320.47) + 18.02;
+                const molesInMolForMass = moles * unitFactors[molesToMassUnit];
+                const massInGramsFromResult = molesInMolForMass * totalMW;
+                const massResult = massInGramsFromResult / unitFactors[massResultUnit];
+                document.getElementById(`${type}-mass-result`).value = formatNumber(massResult);
+            }
+
+            // --- Sequence Input Handling ---
+            function handleSequenceInput(type) {
+                const sequenceEl = document.getElementById(`${type}-sequence`);
+                const lenEl = document.getElementById(`${type}-len`);
+                const cleanedSequence = sequenceEl.value.replace(/[^ACGTU]/gi, '');
+                lenEl.value = cleanedSequence.length;
+                lenEl.dispatchEvent(new Event('input', { bubbles: true }));
+            }
+            
+            // --- Event Listeners ---
+            const container = document.querySelector('.container');
+            container.addEventListener('input', (event) => {
+                const target = event.target;
+                const activeTab = document.querySelector('.tab-content.active').id;
+
+                if (target.id === `${activeTab}-sequence`) {
+                    handleSequenceInput(activeTab);
+                } else if (activeTab === 'ligation') {
+                    calculateLigation();
+                } else if (activeTab === 'dsdna' || activeTab === 'ssrna') {
+                    calculateMassToMoles(activeTab);
+                    calculateMolesToMass(activeTab);
+                }
+            });
+
+            // Tab Management
+            document.querySelector('.tab-nav').addEventListener('click', (event) => {
+                if (event.target.classList.contains('tab-button')) {
+                    const tabName = event.target.dataset.tab;
+                    document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+                    document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+                    document.getElementById(tabName).classList.add('active');
+                    event.target.classList.add('active');
+                }
+            });
+
+            document.querySelectorAll('.sub-nav').forEach(nav => {
+                nav.addEventListener('click', (event) => {
+                    if (event.target.classList.contains('sub-nav-button')) {
+                        const subTabName = event.target.dataset.subtab;
+                        const parent = event.target.closest('.tab-content');
+                        parent.querySelectorAll('.sub-nav-button').forEach(btn => btn.classList.remove('active'));
+                        parent.querySelectorAll('.calculator-section').forEach(sec => sec.classList.remove('active'));
+                        document.getElementById(subTabName).classList.add('active');
+                        event.target.classList.add('active');
+                    }
+                });
+            });
+
+            // --- Initial Calculations ---
+            calculateLigation();
+            calculateMassToMoles('dsdna');
+            calculateMolesToMass('dsdna');
+            calculateMassToMoles('ssrna');
+            calculateMolesToMass('ssrna');
+        });
+    </script>
+    
+    <!-- JavaScript for the Particle Background -->
+    <script>
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        let particlesArray;
+        let mouse = { x: null, y: null, radius: (canvas.height / 80) * (canvas.width / 80) };
+        window.addEventListener('mousemove', function(event) { mouse.x = event.x; mouse.y = event.y; });
+        class Particle {
+            constructor(x, y, directionX, directionY, size) { this.x = x; this.y = y; this.directionX = directionX; this.directionY = directionY; this.size = size; }
+            draw() { ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2, false); ctx.fillStyle = 'rgba(150, 150, 150, 0.5)'; ctx.fill(); }
+            update() {
+                if (this.x > canvas.width || this.x < 0) { this.directionX = -this.directionX; }
+                if (this.y > canvas.height || this.y < 0) { this.directionY = -this.directionY; }
+                let dx = mouse.x - this.x; let dy = mouse.y - this.y; let distance = Math.sqrt(dx * dx + dy * dy);
+                if (distance < mouse.radius + this.size) {
+                    if (mouse.x < this.x && this.x < canvas.width - this.size * 10) { this.x += 5; }
+                    if (mouse.x > this.x && this.x > this.size * 10) { this.x -= 5; }
+                    if (mouse.y < this.y && this.y < canvas.height - this.size * 10) { this.y += 5; }
+                    if (mouse.y > this.y && this.y > this.size * 10) { this.y -= 5; }
+                }
+                this.x += this.directionX; this.y += this.directionY; this.draw();
+            }
+        }
+        function init() {
+            particlesArray = [];
+            let numberOfParticles = (canvas.height * canvas.width) / 9000;
+            for (let i = 0; i < numberOfParticles; i++) {
+                let size = (Math.random() * 2) + 1;
+                let x = (Math.random() * ((innerWidth - size * 2) - (size * 2)) + size * 2);
+                let y = (Math.random() * ((innerHeight - size * 2) - (size * 2)) + size * 2);
+                let directionX = (Math.random() * 0.4) - 0.2;
+                let directionY = (Math.random() * 0.4) - 0.2;
+                particlesArray.push(new Particle(x, y, directionX, directionY, size));
+            }
+        }
+        function animate() {
+            requestAnimationFrame(animate); ctx.clearRect(0, 0, innerWidth, innerHeight);
+            for (let i = 0; i < particlesArray.length; i++) { particlesArray[i].update(); }
+            connect();
+        }
+        function connect() {
+            let opacityValue = 1;
+            for (let a = 0; a < particlesArray.length; a++) {
+                for (let b = a; b < particlesArray.length; b++) {
+                    let distance = ((particlesArray[a].x - particlesArray[b].x) * (particlesArray[a].x - particlesArray[b].x)) + ((particlesArray[a].y - particlesArray[b].y) * (particlesArray[a].y - particlesArray[b].y));
+                    if (distance < (canvas.width / 7) * (canvas.height / 7)) {
+                        opacityValue = 1 - (distance / 20000);
+                        ctx.strokeStyle = 'rgba(180,180,180,' + opacityValue + ')'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(particlesArray[a].x, particlesArray[a].y); ctx.lineTo(particlesArray[b].x, particlesArray[b].y); ctx.stroke();
+                    }
+                }
+            }
+        }
+        window.addEventListener('resize', function() {
+            canvas.width = innerWidth; canvas.height = innerHeight; mouse.radius = ((canvas.height / 80) * (canvas.width / 80)); init();
+        });
+        window.addEventListener('mouseout', function() { mouse.x = undefined; mouse.y = undefined; });
+        init(); animate();
+    </script>
+</body>
+</html>
