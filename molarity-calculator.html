@@ -20,7 +20,6 @@
             margin: 0;
             padding: 20px;
             box-sizing: border-box;
-            /* MODIFIED: Added flex properties to center the container */
             display: flex;
             justify-content: center;
         }
@@ -85,8 +84,8 @@
             padding: 40px;
             border-radius: 12px;
             box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
-            margin-top: 100px; /* Pushed down to be below the fixed header */
-            margin-bottom: 20px; /* Added margin to the bottom */
+            margin-top: 100px;
+            margin-bottom: 20px;
         }
 
         h1.main-title {
@@ -99,11 +98,63 @@
             color: #aaa;
             margin-bottom: 30px;
         }
+        
+        /* NEW: Styles for the integrated search section */
+        .fw-search-section {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+            position: relative;
+        }
+        .fw-input-group {
+            flex: 1;
+            text-align: left;
+            position: relative;
+        }
+        .fw-input-group label {
+            display: block;
+            font-weight: 600;
+            color: #bbb;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+        }
+        .fw-input-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            font-size: 1em;
+            background-color: rgba(0, 0, 0, 0.3);
+            color: #e0e0e0;
+            font-family: 'Lora', serif;
+            box-sizing: border-box;
+        }
+        #suggestions {
+            position: absolute;
+            width: 100%;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background-color: #1e1e1e;
+            border-radius: 8px;
+            margin-top: 4px;
+            max-height: 150px;
+            overflow-y: auto;
+            z-index: 20;
+        }
+        #suggestions div {
+            padding: 10px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        #suggestions div:hover {
+            background-color: rgba(0, 123, 255, 0.3);
+        }
 
         .grid-container {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
             gap: 25px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 30px;
         }
 
         .calculator-card {
@@ -215,6 +266,9 @@
         }
 
         /* Responsive adjustments */
+        @media (max-width: 600px) {
+            .fw-search-section { flex-direction: column; }
+        }
         @media (max-width: 480px) {
             .header { padding: 15px 20px; }
             .logo { font-size: 1.2em; }
@@ -235,7 +289,20 @@
 
     <div class="container">
         <h1 class="main-title"># Molarity Calculator #</h1>
-        <p class="intro">Fill in the known values to calculate the molarity of the required protein. Lets go!</p>
+        <p class="intro">Fill in the known values to calculate the molarity of the required compound. Let's go!</p>
+
+        <!-- NEW: Integrated Formula Weight Search -->
+        <div class="fw-search-section">
+            <div class="fw-input-group">
+                <label for="compound-name">Compound Name</label>
+                <input type="text" id="compound-name" placeholder="Search PubChem...">
+                <div id="suggestions"></div>
+            </div>
+            <div class="fw-input-group">
+                <label for="chemical-formula">Chemical Formula</label>
+                <input type="text" id="chemical-formula" placeholder="e.g., NaCl">
+            </div>
+        </div>
 
         <div class="grid-container">
             <!-- Card 1: Find Mass -->
@@ -256,7 +323,7 @@
                 <div class="input-group">
                     <label>Formula Weight (g/mol):</label>
                     <div class="input-field">
-                        <input type="number" id="mass-calc-fw" placeholder="e.g., 58.44">
+                        <input type="number" id="mass-calc-fw" class="fw-input" placeholder="e.g., 58.44">
                     </div>
                 </div>
                 <div class="input-group">
@@ -296,7 +363,7 @@
                 <div class="input-group">
                     <label>Formula Weight (g/mol):</label>
                     <div class="input-field">
-                        <input type="number" id="vol-calc-fw" placeholder="e.g., 58.44">
+                        <input type="number" id="vol-calc-fw" class="fw-input" placeholder="e.g., 58.44">
                     </div>
                 </div>
                 <div class="input-group">
@@ -337,7 +404,7 @@
                 <div class="input-group">
                     <label>Formula Weight (g/mol):</label>
                     <div class="input-field">
-                        <input type="number" id="molar-calc-fw" placeholder="e.g., 58.44">
+                        <input type="number" id="molar-calc-fw" class="fw-input" placeholder="e.g., 58.44">
                     </div>
                 </div>
                 <div class="input-group">
@@ -408,17 +475,85 @@
     </div>
 
     <script>
-        // --- Calculation Logic (Unchanged) ---
+        // --- Combined Molarity and Formula Weight Logic ---
+        document.addEventListener('DOMContentLoaded', () => {
+            const nameInput = document.getElementById('compound-name');
+            const formulaInput = document.getElementById('chemical-formula');
+            const suggestionsEl = document.getElementById('suggestions');
+            const fwInputs = document.querySelectorAll('.fw-input');
+            let debounceTimer;
+
+            // --- PubChem API Functions ---
+            async function getPubChemSuggestions(query) {
+                if (query.length < 3) {
+                    suggestionsEl.innerHTML = '';
+                    return;
+                }
+                const url = `https://pubchem.ncbi.nlm.nih.gov/rest/autocomplete/compound/${encodeURIComponent(query)}/json?limit=10`;
+                try {
+                    const response = await fetch(url);
+                    if (!response.ok) return;
+                    const data = await response.json();
+                    if (data.total > 0) displayPubChemSuggestions(data.dictionary_terms.compound);
+                } catch (error) { console.error("PubChem Error:", error); }
+            }
+
+            function displayPubChemSuggestions(names) {
+                suggestionsEl.innerHTML = '';
+                names.forEach(name => {
+                    const div = document.createElement('div');
+                    div.textContent = name;
+                    div.addEventListener('click', () => {
+                        nameInput.value = name;
+                        suggestionsEl.innerHTML = '';
+                        getPubChemCompoundData(name);
+                    });
+                    suggestionsEl.appendChild(div);
+                });
+            }
+
+            async function getPubChemCompoundData(name) {
+                const url = `https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/${encodeURIComponent(name)}/property/MolecularFormula,MolecularWeight/JSON`;
+                try {
+                    const response = await fetch(url);
+                    if (!response.ok) { return; }
+                    const data = await response.json();
+                    const props = data.PropertyTable.Properties[0];
+                    if (props) {
+                        formulaInput.value = props.MolecularFormula;
+                        const molecularWeight = parseFloat(props.MolecularWeight).toFixed(4);
+                        // Populate all formula weight fields
+                        fwInputs.forEach(input => {
+                            input.value = molecularWeight;
+                        });
+                    }
+                } catch (error) {
+                    console.error("Error fetching compound data:", error);
+                }
+            }
+
+            // --- Event Listeners for FW Search ---
+            nameInput.addEventListener('input', () => {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => getPubChemSuggestions(nameInput.value), 300);
+            });
+            
+            document.addEventListener('click', (event) => {
+                if (!nameInput.contains(event.target)) {
+                    suggestionsEl.innerHTML = '';
+                }
+            });
+        });
+
+        // --- Molarity Calculation Logic ---
         const unitFactors = {
             'kg': 1000, 'g': 1, 'mg': 1e-3, 'µg': 1e-6,
-            'M': 1, 'mM': 1e-3, 'µM': 1e-6, 'nM': 1e-9, 'pM': 1e-12, 'fM': 1e-15,
-            'L': 1, 'mL': 1e-3, 'µL': 1e-6, 'nl': 1e-9
+            'M': 1, 'mM': 1e-3, 'µM': 1e-6, 'nM': 1e-9,
+            'L': 1, 'mL': 1e-3, 'µL': 1e-6
         };
 
         function formatResult(value, unit) {
-            if (isNaN(value) || !isFinite(value)) {
-                return 'N/A';
-            }
+            if (isNaN(value) || !isFinite(value)) return 'N/A';
             if (Math.abs(value) >= 1e4 || (Math.abs(value) > 0 && Math.abs(value) < 1e-4)) {
                 return value.toExponential(4) + ' ' + unit;
             }
@@ -426,10 +561,7 @@
         }
 
         function clearErrorMessages() {
-            document.getElementById('mass-error').textContent = '';
-            document.getElementById('vol-error').textContent = '';
-            document.getElementById('molar-error').textContent = '';
-            document.getElementById('dilute-error').textContent = '';
+            document.querySelectorAll('.error-message').forEach(el => el.textContent = '');
         }
 
         function calcMassFromConc() {
@@ -442,12 +574,10 @@
 
             if (isNaN(conc) || isNaN(fw) || isNaN(vol)) {
                 document.getElementById('mass-error').textContent = 'Please fill in all values.';
-                document.getElementById('mass-result').textContent = '';
                 return;
             }
             if (fw <= 0) {
                 document.getElementById('mass-error').textContent = 'Formula Weight must be positive.';
-                document.getElementById('mass-result').textContent = '';
                 return;
             }
 
@@ -455,8 +585,8 @@
             const massInGrams = moles * fw;
             
             let massUnit = 'g';
-            if (massInGrams < 1e-0) { massUnit = 'mg'; }
-            if (massInGrams < 1e-3) { massUnit = 'µg'; }
+            if (massInGrams < 1) massUnit = 'mg';
+            if (massInGrams < 1e-3) massUnit = 'µg';
 
             const result = massInGrams / (unitFactors[massUnit] || 1);
             document.getElementById('mass-result').textContent = formatResult(result, massUnit);
@@ -472,12 +602,10 @@
 
             if (isNaN(mass) || isNaN(fw) || isNaN(conc)) {
                 document.getElementById('vol-error').textContent = 'Please fill in all values.';
-                document.getElementById('volume-result').textContent = '';
                 return;
             }
             if (fw <= 0 || conc <= 0) {
                 document.getElementById('vol-error').textContent = 'FW and Conc must be positive.';
-                document.getElementById('volume-result').textContent = '';
                 return;
             }
 
@@ -486,8 +614,8 @@
             const volInLiters = moles / (conc * unitFactors[concUnit]);
             
             let volUnit = 'L';
-            if (volInLiters < 1) { volUnit = 'mL'; }
-            if (volInLiters < 1e-3) { volUnit = 'µL'; }
+            if (volInLiters < 1) volUnit = 'mL';
+            if (volInLiters < 1e-3) volUnit = 'µL';
 
             const result = volInLiters / (unitFactors[volUnit] || 1);
             document.getElementById('volume-result').textContent = formatResult(result, volUnit);
@@ -503,12 +631,10 @@
 
             if (isNaN(mass) || isNaN(fw) || isNaN(vol)) {
                 document.getElementById('molar-error').textContent = 'Please fill in all values.';
-                document.getElementById('molarity-result').textContent = '';
                 return;
             }
             if (fw <= 0 || vol <= 0) {
                 document.getElementById('molar-error').textContent = 'FW and Volume must be positive.';
-                document.getElementById('molarity-result').textContent = '';
                 return;
             }
 
@@ -518,9 +644,9 @@
             const molarity = moles / volInLiters;
 
             let molarUnit = 'M';
-            if (molarity < 1) { molarUnit = 'mM'; }
-            if (molarity < 1e-3) { molarUnit = 'µM'; }
-            if (molarity < 1e-6) { molarUnit = 'nM'; }
+            if (molarity < 1) molarUnit = 'mM';
+            if (molarity < 1e-3) molarUnit = 'µM';
+            if (molarity < 1e-6) molarUnit = 'nM';
 
             const result = molarity / unitFactors[molarUnit];
             document.getElementById('molarity-result').textContent = formatResult(result, molarUnit);
@@ -537,7 +663,6 @@
 
             if (isNaN(stockConc) || isNaN(desiredConc) || isNaN(desiredVol)) {
                 document.getElementById('dilute-error').textContent = 'Please fill in all values.';
-                document.getElementById('dilute-result').textContent = '';
                 return;
             }
 
@@ -547,20 +672,18 @@
 
             if (c1 <= 0) {
                 document.getElementById('dilute-error').textContent = 'Stock concentration must be positive.';
-                document.getElementById('dilute-result').textContent = '';
                 return;
             }
             if (c2 > c1) {
                 document.getElementById('dilute-error').textContent = 'Desired conc. cannot be > stock.';
-                document.getElementById('dilute-result').textContent = '';
                 return;
             }
 
             const requiredVolInLiters = (c2 * v2) / c1;
             
             let volUnit = 'L';
-            if (requiredVolInLiters < 1) { volUnit = 'mL'; }
-            if (requiredVolInLiters < 1e-3) { volUnit = 'µL'; }
+            if (requiredVolInLiters < 1) volUnit = 'mL';
+            if (requiredVolInLiters < 1e-3) volUnit = 'µL';
 
             const result = requiredVolInLiters / (unitFactors[volUnit] || 1);
             document.getElementById('dilute-result').textContent = formatResult(result, volUnit);
@@ -573,67 +696,25 @@
         const ctx = canvas.getContext('2d');
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
-
         let particlesArray;
-
-        let mouse = {
-            x: null,
-            y: null,
-            radius: (canvas.height / 80) * (canvas.width / 80)
-        }
-
-        window.addEventListener('mousemove',
-            function(event) {
-                mouse.x = event.x;
-                mouse.y = event.y;
-            }
-        );
-
+        let mouse = { x: null, y: null, radius: (canvas.height / 80) * (canvas.width / 80) };
+        window.addEventListener('mousemove', function(event) { mouse.x = event.x; mouse.y = event.y; });
         class Particle {
-            constructor(x, y, directionX, directionY, size, color) {
-                this.x = x;
-                this.y = y;
-                this.directionX = directionX;
-                this.directionY = directionY;
-                this.size = size;
-                this.color = color;
-            }
-            draw() {
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2, false);
-                ctx.fillStyle = 'rgba(150, 150, 150, 0.5)';
-                ctx.fill();
-            }
+            constructor(x, y, directionX, directionY, size) { this.x = x; this.y = y; this.directionX = directionX; this.directionY = directionY; this.size = size; }
+            draw() { ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2, false); ctx.fillStyle = 'rgba(150, 150, 150, 0.5)'; ctx.fill(); }
             update() {
-                if (this.x > canvas.width || this.x < 0) {
-                    this.directionX = -this.directionX;
-                }
-                if (this.y > canvas.height || this.y < 0) {
-                    this.directionY = -this.directionY;
-                }
-                let dx = mouse.x - this.x;
-                let dy = mouse.y - this.y;
-                let distance = Math.sqrt(dx * dx + dy * dy);
+                if (this.x > canvas.width || this.x < 0) { this.directionX = -this.directionX; }
+                if (this.y > canvas.height || this.y < 0) { this.directionY = -this.directionY; }
+                let dx = mouse.x - this.x; let dy = mouse.y - this.y; let distance = Math.sqrt(dx * dx + dy * dy);
                 if (distance < mouse.radius + this.size) {
-                    if (mouse.x < this.x && this.x < canvas.width - this.size * 10) {
-                        this.x += 10;
-                    }
-                    if (mouse.x > this.x && this.x > this.size * 10) {
-                        this.x -= 10;
-                    }
-                    if (mouse.y < this.y && this.y < canvas.height - this.size * 10) {
-                        this.y += 10;
-                    }
-                    if (mouse.y > this.y && this.y > this.size * 10) {
-                        this.y -= 10;
-                    }
+                    if (mouse.x < this.x && this.x < canvas.width - this.size * 10) { this.x += 5; }
+                    if (mouse.x > this.x && this.x > this.size * 10) { this.x -= 5; }
+                    if (mouse.y < this.y && this.y < canvas.height - this.size * 10) { this.y += 5; }
+                    if (mouse.y > this.y && this.y > this.size * 10) { this.y -= 5; }
                 }
-                this.x += this.directionX;
-                this.y += this.directionY;
-                this.draw();
+                this.x += this.directionX; this.y += this.directionY; this.draw();
             }
         }
-
         function init() {
             particlesArray = [];
             let numberOfParticles = (canvas.height * canvas.width) / 9000;
@@ -643,57 +724,31 @@
                 let y = (Math.random() * ((innerHeight - size * 2) - (size * 2)) + size * 2);
                 let directionX = (Math.random() * 0.4) - 0.2;
                 let directionY = (Math.random() * 0.4) - 0.2;
-                let color = '#e0e0e0';
-                particlesArray.push(new Particle(x, y, directionX, directionY, size, color));
+                particlesArray.push(new Particle(x, y, directionX, directionY, size));
             }
         }
-
         function animate() {
-            requestAnimationFrame(animate);
-            ctx.clearRect(0, 0, innerWidth, innerHeight);
-            for (let i = 0; i < particlesArray.length; i++) {
-                particlesArray[i].update();
-            }
+            requestAnimationFrame(animate); ctx.clearRect(0, 0, innerWidth, innerHeight);
+            for (let i = 0; i < particlesArray.length; i++) { particlesArray[i].update(); }
             connect();
         }
-
         function connect() {
             let opacityValue = 1;
             for (let a = 0; a < particlesArray.length; a++) {
                 for (let b = a; b < particlesArray.length; b++) {
-                    let distance = ((particlesArray[a].x - particlesArray[b].x) * (particlesArray[a].x - particlesArray[b].x)) +
-                        ((particlesArray[a].y - particlesArray[b].y) * (particlesArray[a].y - particlesArray[b].y));
+                    let distance = ((particlesArray[a].x - particlesArray[b].x) * (particlesArray[a].x - particlesArray[b].x)) + ((particlesArray[a].y - particlesArray[b].y) * (particlesArray[a].y - particlesArray[b].y));
                     if (distance < (canvas.width / 7) * (canvas.height / 7)) {
                         opacityValue = 1 - (distance / 20000);
-                        ctx.strokeStyle = 'rgba(180,180,180,' + opacityValue + ')';
-                        ctx.lineWidth = 1;
-                        ctx.beginPath();
-                        ctx.moveTo(particlesArray[a].x, particlesArray[a].y);
-                        ctx.lineTo(particlesArray[b].x, particlesArray[b].y);
-                        ctx.stroke();
+                        ctx.strokeStyle = 'rgba(180,180,180,' + opacityValue + ')'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(particlesArray[a].x, particlesArray[a].y); ctx.lineTo(particlesArray[b].x, particlesArray[b].y); ctx.stroke();
                     }
                 }
             }
         }
-        
-        window.addEventListener('resize',
-            function() {
-                canvas.width = innerWidth;
-                canvas.height = innerHeight;
-                mouse.radius = ((canvas.height / 80) * (canvas.height / 80));
-                init();
-            }
-        );
-        
-        window.addEventListener('mouseout',
-            function() {
-                mouse.x = undefined;
-                mouse.y = undefined;
-            }
-        );
-        
-        init();
-        animate();
+        window.addEventListener('resize', function() {
+            canvas.width = innerWidth; canvas.height = innerHeight; mouse.radius = ((canvas.height / 80) * (canvas.width / 80)); init();
+        });
+        window.addEventListener('mouseout', function() { mouse.x = undefined; mouse.y = undefined; });
+        init(); animate();
     </script>
 </body>
 </html>
