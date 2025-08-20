@@ -99,7 +99,7 @@
             margin-bottom: 30px;
         }
         
-        /* NEW: Styles for the integrated search section */
+        /* Styles for the integrated search section */
         .fw-search-section {
             display: flex;
             gap: 20px;
@@ -130,6 +130,8 @@
             box-sizing: border-box;
         }
         #suggestions {
+            /* FIXED: Hidden by default */
+            display: none; 
             position: absolute;
             width: 100%;
             border: 1px solid rgba(255, 255, 255, 0.2);
@@ -291,7 +293,7 @@
         <h1 class="main-title"># Molarity Calculator #</h1>
         <p class="intro">Fill in the known values to calculate the molarity of the required compound. Let's go!</p>
 
-        <!-- NEW: Integrated Formula Weight Search -->
+        <!-- Integrated Formula Weight Search -->
         <div class="fw-search-section">
             <div class="fw-input-group">
                 <label for="compound-name">Compound Name</label>
@@ -486,7 +488,7 @@
             // --- PubChem API Functions ---
             async function getPubChemSuggestions(query) {
                 if (query.length < 3) {
-                    suggestionsEl.innerHTML = '';
+                    suggestionsEl.style.display = 'none'; // Hide if query is too short
                     return;
                 }
                 const url = `https://pubchem.ncbi.nlm.nih.gov/rest/autocomplete/compound/${encodeURIComponent(query)}/json?limit=10`;
@@ -495,6 +497,7 @@
                     if (!response.ok) return;
                     const data = await response.json();
                     if (data.total > 0) displayPubChemSuggestions(data.dictionary_terms.compound);
+                    else suggestionsEl.style.display = 'none';
                 } catch (error) { console.error("PubChem Error:", error); }
             }
 
@@ -505,11 +508,12 @@
                     div.textContent = name;
                     div.addEventListener('click', () => {
                         nameInput.value = name;
-                        suggestionsEl.innerHTML = '';
+                        suggestionsEl.style.display = 'none';
                         getPubChemCompoundData(name);
                     });
                     suggestionsEl.appendChild(div);
                 });
+                suggestionsEl.style.display = 'block'; // Show only when there are suggestions
             }
 
             async function getPubChemCompoundData(name) {
@@ -540,7 +544,7 @@
             
             document.addEventListener('click', (event) => {
                 if (!nameInput.contains(event.target)) {
-                    suggestionsEl.innerHTML = '';
+                    suggestionsEl.style.display = 'none';
                 }
             });
         });
